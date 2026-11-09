@@ -111,10 +111,8 @@ export default async function TodayPage() {
   );
 }
 
-/** Total gasto hoje (sem gastos de viagem). Antes de existir a tabela de gastos devolve 0. */
+/** Total gasto hoje (sem gastos de viagem, que ficam separados). */
 async function expenseTotalToday(userId: string, today: string): Promise<number> {
-  try {
-    const row = await queryOne<{ s: string | null }>("SELECT sum(amount_cents)::text AS s FROM expenses WHERE user_id = $1 AND date = $2::date AND trip_id IS NULL", [userId, today]);
-    return Number(row?.s ?? 0);
-  } catch { return 0; }
+  const row = await queryOne<{ s: string | null }>("SELECT sum(amount_cents)::text AS s FROM expenses WHERE user_id = $1 AND date = $2::date AND trip_id IS NULL", [userId, today]);
+  return Number(row?.s ?? 0);
 }
