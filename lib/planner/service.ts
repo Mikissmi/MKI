@@ -157,6 +157,7 @@ export async function ensureDayPlan(userId: string, date: string, opts: { force?
         return { source: "ai", reason: null };
       } catch (e) {
         const why = e instanceof AiError ? e.reason : "http";
+        console.warn(`[ai] plano do dia caiu para as regras: ${why}${e instanceof Error ? ` (${e.message})` : ""}`);
         await logRequest(userId, "plan", "failed", why, true, hash);
         reason = why === "format" ? "format" : "failed";
       }

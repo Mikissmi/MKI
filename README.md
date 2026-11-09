@@ -6,12 +6,12 @@ Painel pessoal da vida (PWA): agenda, rotina, hábitos, leituras, lazer, saúde,
 
 | Área | O que faz |
 | --- | --- |
-| **Hoje** | check-in de humor/energia (1 a 5), plano do dia (agenda + sugestões da IA ou das regras), Dia leve, hábitos, água, gasto do dia, manchetes |
+| **Hoje** | check-in de humor/energia (1 a 5) que recolhe num selo depois de respondido, plano do dia (agenda + sugestões da IA ou das regras), Dia leve, hábitos, água, gasto do dia, manchetes |
 | **Assistente** | conversa sobre a rotina; Gemini primeiro, motor de regras como plano B (limite de 10 chamadas por dia, espera de 5 min após falha) |
-| **Agenda** | dia/semana/mês, eventos com repetição e lembretes dentro do app, rotina-modelo, horários livres de 30 min ou mais |
+| **Agenda** | dia/semana/mês, eventos com repetição e lembretes dentro do app, rotina-modelo com blocos fixos ou flexíveis (janela de início + duração) e deslocamento de ida e volta, horários livres de 30 min ou mais |
 | **Hábitos e Saúde** | sequências, calendário de calor, rotinas, mini-vitórias, sono, água, refeições, exercício, medidas |
 | **Leituras, Hobbies, Música** | livros/artigos/obras, atividades com marca de tela, mídia, projetos, trilha do dia |
-| **Finanças, Notícias (RSS)** | gastos por categoria, orçamento, rosca; feeds com temas e "ler depois" |
+| **Finanças, Notícias (RSS)** | gastos por categoria, orçamento, rosca; feeds com temas; matérias lidas dentro do app (texto em modo leitura, resumo simples ou com IA), marcar como lida cria o artigo em Leituras |
 | **Receitas, Estúdio, Viagens, Desejos** | planejador semanal e lista de compras, sessões com timer, roteiros e mala, período de espera antes de comprar |
 | **Retrospectivas** | semanal e mensal, geradas ao abrir e guardadas, com comparação e reflexão |
 | **Configurações** | perfil, tema e cor, rotina, IA e o que compartilhar, metas, exportar/importar |
@@ -46,6 +46,8 @@ Dá para apontar `DATABASE_URL` para um Postgres em `localhost` (o app usa o dri
 
 ## Decisões e limites
 
+- **Notícias no app**: o texto da matéria é buscado na hora e fica só em cache temporário na memória; no banco ficam título, fonte, link, resumo e suas anotações. O resumo simples não gasta a IA; "Resumir com IA" conta no limite diário.
+- **Rotina flexível**: a IA só *propõe* mover o início de um bloco dentro da janela; nada muda sem aceitar. O deslocamento acompanha o horário real do dia e não conta como tempo livre.
 - **Sem upload de imagens**: capas e fotos guardam o link da imagem.
 - **Sem tarefas agendadas**: notícias e retrospectivas são atualizadas ao abrir a tela; lembretes aparecem com o app aberto.
 - **Privacidade da IA**: por padrão diário, gastos e saúde não vão para a IA (Configurações).
