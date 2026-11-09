@@ -13,7 +13,8 @@
     "migrate": "dbmate --migrations-dir db/migrations up",
     "bootstrap": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/bootstrap.ts",
     "icons": "node scripts/make-icons.mjs",
-    "create-user": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/create-user.ts"
+    "create-user": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/create-user.ts",
+    "check": "tsc --noEmit && node scripts/check-server-links.mjs && vitest run"
   },
   "engines": {
     "node": ">=22"

@@ -42,7 +42,7 @@ export function QuickAddButton() {
               key={label}
               onClick={() => {
                 setOpen(false);
-                notifications.show({ message: `${label}: chega nas próximas etapas 🌸`, color });
+                notifications.show({ message: `${label}: chega nas próximas etapas`, color });
               }}
             >
               <Stack align="center" gap={4}>

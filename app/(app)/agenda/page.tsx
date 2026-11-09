@@ -51,7 +51,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
           <LinkButton href={href(view, next)} variant="subtle" size="md" px="sm" aria-label="Próximo">›</LinkButton>
         </Group>
 
-        {view === "dia" && <DayTimeline occurrences={dayOccs} freeSlots={slots} nowMin={undefined} emptyText="Nada marcado. Dia livre 🌿" />}
+        {view === "dia" && <DayTimeline occurrences={dayOccs} freeSlots={slots} nowMin={undefined} emptyText="Nada marcado. Dia livre" />}
         {view === "semana" && <WeekView start={from} occurrences={occurrences} today={today} />}
         {view === "mes" && <MonthView month={startOfMonth(date)} occurrences={occurrences} today={today} />}
 

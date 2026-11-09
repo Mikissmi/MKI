@@ -5,6 +5,7 @@ import { query } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { checkinSchema, zodState, type FormState } from "@/lib/agenda/schemas";
 import { localDateKey } from "@/lib/time";
+import { ensureDayPlan } from "@/lib/planner/service";
 
 export async function saveCheckin(_prev: FormState, form: FormData): Promise<FormState> {
   const user = await requireUser();
@@ -17,6 +18,8 @@ export async function saveCheckin(_prev: FormState, form: FormData): Promise<For
      ON CONFLICT (user_id, date) DO UPDATE SET mood=$3, energy=$4, note=$5, updated_at=now()`,
     [user.id, localDateKey(), mood, energy, note],
   );
-  revalidatePath("/");
+  // Energia 1 ou 2 ativa o Dia leve: o plano encolhe na hora (pelas regras, sem gastar chamada de IA).
+  if (energy <= 2) await ensureDayPlan(user.id, localDateKey(), { allowAi: false });
+  revalidatePath("/", "layout");
   return { ok: true };
 }

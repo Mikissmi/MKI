@@ -20,7 +20,7 @@ export function HoursForm({ wake, sleep }: { wake: string; sleep: string }) {
           <TextInput name="wake" type="time" label="Acordar" defaultValue={wake} error={state.fieldErrors?.wake} required />
           <TextInput name="sleep" type="time" label="Dormir" defaultValue={sleep} error={state.fieldErrors?.sleep} required />
         </Group>
-        {state.ok && <Text size="xs" c="sage.7" fw={700}>salvo ✓</Text>}
+        {state.ok && <Text size="xs" c="sage.7" fw={700}>salvo</Text>}
         <Button type="submit" loading={pending} variant="light">Salvar horários</Button>
       </Stack>
     </ActionForm>
@@ -49,7 +49,7 @@ function BlockForm({ block }: { block?: RoutineBlock }) {
           <TextInput name="end" type="time" label="Fim" defaultValue={block ? fmtMin(block.endMin) : "18:00"} error={state.fieldErrors?.end} required />
         </Group>
         <NativeSelect name="category" label="Categoria" defaultValue={block?.category ?? "trabalho"} data={CATEGORIES.map((c) => ({ value: c.value, label: c.label }))} />
-        {state.ok && <Text size="xs" c="sage.7" fw={700}>salvo ✓</Text>}
+        {state.ok && <Text size="xs" c="sage.7" fw={700}>salvo</Text>}
         <Button type="submit" loading={pending}>{block ? "Salvar bloco" : "Adicionar bloco"}</Button>
       </Stack>
     </ActionForm>
