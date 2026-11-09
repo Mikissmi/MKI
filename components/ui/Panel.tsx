@@ -18,7 +18,7 @@ export function Panel({ tone = "plain", title, icon, action, children, p = "md",
         <Group justify="space-between" mb="sm" wrap="nowrap">
           <Group gap={8} wrap="nowrap" style={{ minWidth: 0 }}>
             {icon && <IconTile icon={icon} tone={tone === "plain" ? "pink" : tone} size={30} />}
-            <Text fw={800} size="sm" truncate>{title}</Text>
+            <Text fw={800} size="sm" lh={1.25}>{title}</Text>
           </Group>
           {action}
         </Group>
