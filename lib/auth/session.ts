@@ -59,3 +59,13 @@ export async function destroySession(allDevices = false): Promise<void> {
   }
   jar.delete(SESSION_COOKIE);
 }
+
+/** Para server actions e rotas: garante sessão válida ou manda para o login. */
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getSessionUser();
+  if (!user) {
+    const { redirect } = await import("next/navigation");
+    redirect("/login");
+  }
+  return user!;
+}

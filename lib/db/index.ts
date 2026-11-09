@@ -5,22 +5,33 @@ import { neon } from "@neondatabase/serverless";
  * parâmetros ($1, $2...) — nunca texto concatenado.
  * Só roda no servidor: a DATABASE_URL nunca vai para o navegador.
  */
-let client: ReturnType<typeof neon> | undefined;
+type Runner = (text: string, params: unknown[]) => Promise<unknown[]>;
+let runner: Runner | undefined;
 
-function sql() {
-  if (!client) {
-    const url = process.env.DATABASE_URL;
-    if (!url) throw new Error("DATABASE_URL não está definida");
-    client = neon(url);
+async function getRunner(): Promise<Runner> {
+  if (runner) return runner;
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL não está definida");
+
+  const host = new URL(url).hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    // Só para desenvolvimento/testes com um Postgres local; em produção o host é do Neon.
+    const pg = await import("pg");
+    const Pool = (pg.default ?? pg).Pool;
+    const pool = new Pool({ connectionString: url, max: 4 });
+    runner = async (text, params) => (await pool.query(text, params as unknown[])).rows;
+  } else {
+    const client = neon(url);
+    runner = async (text, params) => (await client.query(text, params)) as unknown[];
   }
-  return client;
+  return runner;
 }
 
 export async function query<T = Record<string, unknown>>(
   text: string,
   params: unknown[] = [],
 ): Promise<T[]> {
-  return (await sql().query(text, params)) as T[];
+  return (await (await getRunner())(text, params)) as T[];
 }
 
 export async function queryOne<T = Record<string, unknown>>(

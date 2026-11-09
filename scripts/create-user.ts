@@ -2,6 +2,7 @@
 // A senha é pedida no terminal (ou vem de MKI_PASSWORD). Não existe tela de cadastro.
 import { createInterface } from "node:readline/promises";
 import { neon } from "@neondatabase/serverless";
+import pg from "pg";
 import { hash } from "@node-rs/argon2";
 
 const username = process.argv[2];
@@ -25,7 +26,14 @@ if (password.length < 10) {
   process.exit(1);
 }
 
-const sql = neon(process.env.DATABASE_URL);
+// Neon em produção; Postgres local (localhost) só para desenvolvimento.
+const isLocal = ["localhost", "127.0.0.1"].includes(new URL(process.env.DATABASE_URL).hostname);
+const pool = isLocal ? new pg.Pool({ connectionString: process.env.DATABASE_URL }) : null;
+const neonSql = isLocal ? null : neon(process.env.DATABASE_URL);
+const sql = {
+  query: async (text: string, params: unknown[]) =>
+    (pool ? (await pool.query(text, params)).rows : await neonSql!.query(text, params)) as Record<string, any>[],
+};
 const passwordHash = await hash(password, { algorithm: 2, memoryCost: 19456, timeCost: 2, parallelism: 1 });
 const rows = await sql.query(
   `INSERT INTO users (username, password_hash) VALUES ($1, $2)
@@ -34,5 +42,7 @@ const rows = await sql.query(
   [username, passwordHash],
 );
 await sql.query("INSERT INTO settings (user_id) VALUES ($1) ON CONFLICT DO NOTHING", [rows[0].id]);
+await sql.query("SELECT seed_routine($1)", [rows[0].id]); // rotina-modelo de exemplo (acordar 07:00, dormir 23:00, trabalho)
 await sql.query("DELETE FROM sessions WHERE user_id = $1", [rows[0].id]);
 console.log(`Usuário "${username}" pronto.`);
+await pool?.end();
