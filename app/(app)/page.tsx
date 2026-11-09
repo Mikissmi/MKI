@@ -105,6 +105,12 @@ export default async function TodayPage() {
           {usage >= AI_DAILY_LIMIT - 2 && usage < AI_DAILY_LIMIT && <Text size="xs" c="dimmed" mt="xs">Você usou {usage} de {AI_DAILY_LIMIT} chamadas de IA hoje.</Text>}
         </Panel>
 
+        {settings.screenBreakReminder && ctx.screenMinutes.com >= 120 && (
+          <Panel tone="sage" title="Que tal uma pausa sem tela?" icon="leaf">
+            <Text size="sm">Você já registrou {Math.round(ctx.screenMinutes.com / 60 * 10) / 10} h com tela hoje. Alongue, olhe pela janela ou beba água.</Text>
+          </Panel>
+        )}
+
         {retro && (
           <Panel tone="sun" title={retro.period === "semana" ? "Sua retrospectiva da semana está pronta" : "Sua retrospectiva do mês está pronta"} icon="calendar" action={<LinkButton href={`/retrospectivas?p=${retro.period}&d=${retro.start}`} size="compact-xs">Ver</LinkButton>}>
             <Text size="sm" style={{ opacity: 0.85 }}>Veja como foi: humor, hábitos, leituras, tempo de tela e gastos.</Text>
