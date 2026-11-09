@@ -17,6 +17,7 @@ export type Settings = {
   readingSessionsPerWeek: number;
   readingBooksPerYear: number;
   screenBreakReminder: boolean;
+  retroNotice: boolean;
 };
 
 export const AI_DAILY_LIMIT = 10; // decisão fechada: 10 chamadas por dia dentro do app
@@ -24,7 +25,7 @@ export const AI_DAILY_LIMIT = 10; // decisão fechada: 10 chamadas por dia dentr
 const DEFAULTS: Settings = {
   displayName: null, accent: "lotus", wake: "07:00", sleep: "23:00", aiEnabled: true,
   aiShare: { agenda: true, mood: true, diary: false, expenses: false, health: false },
-  aiCooldownMin: 5, waterGoal: 8, monthlyBudgetCents: null, readingSessionsPerWeek: 5, readingBooksPerYear: 12, screenBreakReminder: false,
+  aiCooldownMin: 5, waterGoal: 8, monthlyBudgetCents: null, readingSessionsPerWeek: 5, readingBooksPerYear: 12, screenBreakReminder: false, retroNotice: true,
 };
 
 const isTime = (v: unknown): v is string => typeof v === "string" && parseTime(v) !== null;
@@ -49,6 +50,7 @@ export function normalizeSettings(d: Record<string, unknown>): Settings {
     readingSessionsPerWeek: int(d.readingSessionsPerWeek, DEFAULTS.readingSessionsPerWeek, 1, 21),
     readingBooksPerYear: int(d.readingBooksPerYear, DEFAULTS.readingBooksPerYear, 1, 365),
     screenBreakReminder: bool(d.screenBreakReminder, DEFAULTS.screenBreakReminder),
+    retroNotice: bool(d.retroNotice, DEFAULTS.retroNotice),
   };
 }
 

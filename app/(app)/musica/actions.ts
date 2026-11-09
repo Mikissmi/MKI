@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { query } from "@/lib/db";
+import { localDateKey } from "@/lib/time";
 import { requireUser } from "@/lib/auth/session";
 import { removeRecord, saveRecord, type CrudDef } from "@/lib/crud";
 import { bool, id, oneOf, optNum, optOneOf, optText, text, url } from "@/lib/schema-kit";
@@ -16,7 +17,13 @@ const playlist: CrudDef = {
   schema: z.object({ id, title: text(120), subtitle: optText(160), url: url(), cover_url: url(), mood: optOneOf(["calmo", "animado", "focado", "nostalgico"]), is_today: bool }),
 };
 
-export async function saveAudio(_p: FormState, f: FormData) { const u = await requireUser(); return saveRecord(audio, f, u.id); }
+export async function saveAudio(_p: FormState, f: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const r = await saveRecord(audio, f, u.id);
+  // marca quando foi ouvido (a retrospectiva usa isso)
+  if (r.ok) await query("UPDATE audio_items SET listened_on = COALESCE(listened_on, $2::date) WHERE user_id = $1 AND status = 'ouvido' AND listened_on IS NULL", [u.id, localDateKey()]);
+  return r;
+}
 export async function deleteAudio(f: FormData) { const u = await requireUser(); await removeRecord("audio_items", f.get("id"), u.id); }
 export async function savePlaylist(_p: FormState, f: FormData): Promise<FormState> {
   const u = await requireUser();

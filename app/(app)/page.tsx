@@ -5,6 +5,7 @@ import { fetchCheckin, fetchOccurrences } from "@/lib/agenda/queries";
 import { freeSlots } from "@/lib/agenda/free-slots";
 import { isScheduled } from "@/lib/habits";
 import { ensureDayPlan, getPlanState, aiUsageToday } from "@/lib/planner/service";
+import { pendingRetro } from "@/lib/retro";
 import { AI_DAILY_LIMIT } from "@/lib/settings";
 import { formatDateLong, localDateKey, localMinutes, cap } from "@/lib/time";
 import { brl } from "@/lib/format";
@@ -58,6 +59,7 @@ export default async function TodayPage() {
   ]);
   const habitsToday = habitRows.filter((h) => isScheduled({ id: h.id, frequency: h.frequency, weekdays: h.weekdays, timesPerWeek: null }, today)).length;
   const spent = await expenseTotalToday(user.id, today);
+  const retro = settings.retroNotice ? await pendingRetro(user.id, today) : null;
   const headlines = await query<{ id: string; title: string; feed_title: string }>(
     "SELECT n.id, n.title, f.title AS feed_title FROM news_items n JOIN feeds f ON f.id = n.feed_id AND NOT f.muted WHERE n.user_id = $1 AND NOT n.read ORDER BY n.published_at DESC NULLS LAST, n.created_at DESC LIMIT 3", [user.id]);
 
@@ -102,6 +104,12 @@ export default async function TodayPage() {
           </Group>
           {usage >= AI_DAILY_LIMIT - 2 && usage < AI_DAILY_LIMIT && <Text size="xs" c="dimmed" mt="xs">Você usou {usage} de {AI_DAILY_LIMIT} chamadas de IA hoje.</Text>}
         </Panel>
+
+        {retro && (
+          <Panel tone="sun" title={retro.period === "semana" ? "Sua retrospectiva da semana está pronta" : "Sua retrospectiva do mês está pronta"} icon="calendar" action={<LinkButton href={`/retrospectivas?p=${retro.period}&d=${retro.start}`} size="compact-xs">Ver</LinkButton>}>
+            <Text size="sm" style={{ opacity: 0.85 }}>Veja como foi: humor, hábitos, leituras, tempo de tela e gastos.</Text>
+          </Panel>
+        )}
 
         {headlines.length > 0 && (
           <Panel tone="plain" title="Notícias em destaque" icon="news" action={<LinkButton href="/noticias" size="compact-xs" variant="subtle">Ver todas</LinkButton>}>

@@ -30,7 +30,12 @@ export async function saveActivity(_p: FormState, f: FormData) { const u = await
 export async function deleteActivity(f: FormData) { const u = await requireUser(); await removeRecord("activities", f.get("id"), u.id); }
 export async function saveActivityLog(_p: FormState, f: FormData) { const u = await requireUser(); return saveRecord(activityLog, f, u.id); }
 export async function deleteActivityLog(f: FormData) { const u = await requireUser(); await removeRecord("activity_logs", f.get("id"), u.id); }
-export async function saveMedia(_p: FormState, f: FormData) { const u = await requireUser(); return saveRecord(media, f, u.id); }
+export async function saveMedia(_p: FormState, f: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const r = await saveRecord(media, f, u.id);
+  if (r.ok) await query("UPDATE media_items SET finished_on = COALESCE(finished_on, $2::date) WHERE user_id = $1 AND status = 'concluido' AND finished_on IS NULL", [u.id, localDateKey()]);
+  return r;
+}
 export async function deleteMedia(f: FormData) { const u = await requireUser(); await removeRecord("media_items", f.get("id"), u.id); }
 export async function saveProject(_p: FormState, f: FormData) { const u = await requireUser(); return saveRecord(project, f, u.id); }
 export async function deleteProject(f: FormData) { const u = await requireUser(); await removeRecord("projects", f.get("id"), u.id); }
