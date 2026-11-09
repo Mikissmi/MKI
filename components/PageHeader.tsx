@@ -15,7 +15,7 @@ export function PageHeader({ title, subtitle, back, action }: { title: string; s
           </Link>
         )}
         <Box style={{ minWidth: 0 }}>
-          <Group gap={8} wrap="nowrap"><Logo size={28} /><Title order={2} fz={24} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</Title></Group>
+          <Group gap={8} wrap="nowrap"><Logo size={28} /><Title order={2} fz={title.length > 16 ? 20 : 24} lh={1.15}>{title}</Title></Group>
           {subtitle && <Text c="dimmed" size="sm" mt={2}>{subtitle}</Text>}
         </Box>
       </Group>
