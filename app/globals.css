@@ -1,0 +1,12 @@
+:root {
+  --mki-nav-height: 68px;
+}
+
+body {
+  background: light-dark(#fbf5ec, var(--mantine-color-dark-8));
+  overscroll-behavior-y: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

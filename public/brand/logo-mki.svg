@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- PLACEHOLDER: troque pelo arquivo original da logo (ver spec, seção 5) -->
+  <ellipse cx="256" cy="300" rx="52" ry="118" transform="rotate(-72 256 340) translate(0 -70)" fill="#f395bc"/><ellipse cx="256" cy="300" rx="52" ry="118" transform="rotate(72 256 340) translate(0 -70)" fill="#f395bc"/><ellipse cx="256" cy="300" rx="52" ry="118" transform="rotate(-36 256 340) translate(0 -70)" fill="#ee77a8"/><ellipse cx="256" cy="300" rx="52" ry="118" transform="rotate(36 256 340) translate(0 -70)" fill="#ee77a8"/><ellipse cx="256" cy="300" rx="52" ry="118" transform="rotate(0 256 340) translate(0 -70)" fill="#e85d97"/>
+  <circle cx="256" cy="74" r="26" fill="#82ab73"/>
+</svg>
