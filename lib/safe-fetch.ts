@@ -18,12 +18,22 @@ export function isPrivateIp(ip: string): boolean {
 
 export class UnsafeUrlError extends Error {}
 
+/**
+ * Só para testes locais: com MKI_DEV_ALLOW_LOOPBACK=1 e banco em localhost, permite buscar 127.0.0.1/localhost.
+ * Nunca vale em produção (o banco do Neon não é localhost).
+ */
+function devLoopbackAllowed(host: string): boolean {
+  if (process.env.MKI_DEV_ALLOW_LOOPBACK !== "1" || !(host === "127.0.0.1" || host === "localhost")) return false;
+  try { return ["localhost", "127.0.0.1"].includes(new URL(process.env.DATABASE_URL ?? "").hostname); } catch { return false; }
+}
+
 export async function assertPublicUrl(raw: string | URL): Promise<URL> {
   let u: URL;
   try { u = new URL(raw); } catch { throw new UnsafeUrlError("Link inválido"); }
   if (u.protocol !== "http:" && u.protocol !== "https:") throw new UnsafeUrlError("Use um link http ou https");
   if (u.username || u.password) throw new UnsafeUrlError("Link com usuário/senha não é permitido");
   const host = u.hostname.replace(/^\[|\]$/g, "");
+  if (devLoopbackAllowed(host)) return u;
   if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) throw new UnsafeUrlError("Endereço interno bloqueado");
   if (net.isIP(host)) {
     if (isPrivateIp(host)) throw new UnsafeUrlError("Endereço interno bloqueado");
