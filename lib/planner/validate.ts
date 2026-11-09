@@ -16,11 +16,12 @@ export const aiPlanSchema = z.object({
     reason: z.string().trim().max(200).default(""),
   })).max(12).default([]),
   /** Propostas de mover o início de um bloco flexível dentro da janela (só proposta: nada muda sem aceitar). */
+  // opcional e tolerante: uma proposta mal formada é ignorada em sanitizeMoves e nunca derruba o plano inteiro
   moves: z.array(z.object({
-    title: z.string().trim().min(1).max(120),
-    start: z.string().refine((s) => parseTime(s) !== null, "horário inválido"),
-    reason: z.string().trim().max(200).default(""),
-  })).max(3).default([]),
+    title: z.string().trim().min(1).max(120).catch(""),
+    start: z.string().catch(""),
+    reason: z.string().trim().max(200).catch(""),
+  })).catch([]).default([]),
 });
 
 export type AiPlan = z.infer<typeof aiPlanSchema>;
@@ -53,8 +54,9 @@ export function sanitizeMoves(plan: AiPlan, ctx: PlanContext): PlanBlock[] {
   const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const out: PlanBlock[] = [];
   for (const m of plan.moves) {
+    const start = parseTime(m.start);
+    if (start === null || !m.title) continue; // horário inválido (ex.: "24:00") ou sem título: ignora só esta proposta
     const block = ctx.flexBlocks.find((b) => norm(m.title).includes(norm(b.title)) || norm(b.title).includes(norm(m.title)));
-    const start = parseTime(m.start)!;
     if (!block || block.confirmed || out.some((o) => o.refId === block.blockId)) continue;
     if (start < block.earliest || start > block.latest || start === block.startMin) continue;
     if (ctx.nowMin !== null && start < ctx.nowMin) continue;

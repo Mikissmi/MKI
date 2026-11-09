@@ -209,6 +209,13 @@ describe("IA propõe mover o início (só proposta)", () => {
     expect(sanitizeMoves(plan([{ title: "Academia", start: "09:00" }]), ctx())).toEqual([]);
     expect(sanitizeMoves(plan([{ title: "Trabalho", start: "09:00" }]), dayCtx(job(), [ovr({ startActual: 540 })]))).toEqual([]);
   });
+  it("proposta mal formada é ignorada e NÃO derruba o plano inteiro", () => {
+    const r = aiPlanSchema.safeParse({ reply: "oi", blocks: [{ start: "10:00", durationMin: 30, kind: "atividade", title: "Caminhar", reason: "" }], moves: [{ title: "Trabalho", start: "24:00" }, { title: "Trabalho", start: "banana" }, { start: 5 }, "lixo"] });
+    expect(r.success).toBe(true);
+    expect(r.success && r.data.blocks).toHaveLength(1);
+    expect(sanitizeMoves(r.success ? r.data : plan([]), ctx())).toEqual([]);
+    expect(aiPlanSchema.safeParse({ blocks: [], moves: "não é lista" }).success).toBe(true);
+  });
   it("no máximo uma proposta por bloco; resposta sem 'moves' continua válida", () => {
     expect(sanitizeMoves(plan([{ title: "Trabalho", start: "09:00" }, { title: "Trabalho", start: "09:30" }]), ctx())).toHaveLength(1);
     expect(aiPlanSchema.safeParse({ blocks: [] }).success).toBe(true);
