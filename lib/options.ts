@@ -23,3 +23,10 @@ export const CATEGORY_ICONS = [
   { value: "home", label: "Casa" }, { value: "salad", label: "Alimentação" }, { value: "bus", label: "Transporte" }, { value: "music", label: "Lazer" }, { value: "heart", label: "Saúde" },
   { value: "cart", label: "Compras" }, { value: "book", label: "Estudos" }, { value: "gift", label: "Presentes" }, { value: "plane", label: "Viagem" }, { value: "coffee", label: "Café" }, { value: "shirt", label: "Roupas" }, { value: "wallet", label: "Outros" },
 ] as const;
+
+export const CREATIVE_KINDS = [{ value: "desenho", label: "Desenho" }, { value: "escrita", label: "Escrita" }, { value: "programacao", label: "Programação" }, { value: "artesanato", label: "Artesanato" }, { value: "fotografia", label: "Fotografia" }, { value: "outro", label: "Outro" }] as const;
+export const CHALLENGES = [
+  "Desenhe uma janela para um lugar imaginário", "Escreva uma cena de 100 palavras sobre o primeiro dia de chuva", "Fotografe algo verde que você nunca tinha notado",
+  "Faça um mini zine de 4 páginas sobre o seu dia", "Desenhe um objeto usando só 5 linhas", "Escreva uma carta para você daqui a um ano",
+  "Monte uma colagem com as cores de um pôr do sol", "Transforme sua música favorita em um poema", "Crie um personagem a partir de um objeto da sua mesa", "Programe algo pequeno e inútil, só por diversão",
+];

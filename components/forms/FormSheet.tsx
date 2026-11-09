@@ -30,7 +30,7 @@ function FieldInput({ f, value, error }: { f: Field; value: FormValues[string]; 
     case "decimal": return <TextInput {...common} type="text" inputMode="decimal" defaultValue={str} placeholder={f.placeholder} />;
     case "url": return <TextInput {...common} type="url" inputMode="url" defaultValue={str} placeholder={f.placeholder ?? "https://"} maxLength={1000} />;
     case "select": return <NativeSelect {...common} defaultValue={str} data={f.options ?? []} />;
-    case "switch": return <Switch name={f.name} label={f.label} description={f.description} defaultChecked={value === true || value === "on"} color="lotus" />;
+    case "switch": return <div><Switch name={f.name} label={f.label} description={f.description} defaultChecked={value === true || value === "on"} color="lotus" />{error && <Text size="xs" c="red" mt={2}>{error}</Text>}</div>;
     case "days": {
       const selected = Array.isArray(value) ? value.map(String) : [];
       return (

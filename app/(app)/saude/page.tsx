@@ -1,4 +1,4 @@
-import { Box, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { query, queryOne } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { getSettings } from "@/lib/settings";
@@ -9,6 +9,7 @@ import { Panel, IconTile, ProgressBar } from "@/components/ui/Panel";
 import { LineChart } from "@/components/ui/charts";
 import { AddSheet, FormSheet, type Field } from "@/components/forms/FormSheet";
 import { MEALS, WORKOUTS } from "@/lib/options";
+import { registerPlannedMeal } from "../receitas/actions";
 import { addWater, deleteMeal, deleteWorkout, saveMeal, saveMeasure, saveSleep, saveWorkout } from "./actions";
 
 export const metadata = { title: "Saúde e bem-estar" };
@@ -25,6 +26,8 @@ export default async function HealthPage() {
   const days = Array.from({ length: 7 }, (_, i) => addDays(from, i));
   const settings = await getSettings(user.id);
 
+  const planned = await query<{ meal: string; label: string }>(
+    "SELECT m.meal, COALESCE(r.title, m.custom) AS label FROM meal_plans m LEFT JOIN recipes r ON r.id = m.recipe_id WHERE m.user_id = $1 AND m.date = $2::date", [user.id, today]);
   const [checkins, sleeps, waterWeek, meals, workouts, workWeek, stepsWeek, measure] = await Promise.all([
     query<{ date: string; mood: number; energy: number }>("SELECT date::text AS date, mood, energy FROM checkins WHERE user_id = $1 AND date BETWEEN $2::date AND $3::date", [user.id, from, today]),
     query<{ id: string; date: string; slept_at: string; woke_at: string; quality: number | null }>("SELECT id, date::text AS date, slept_at::text AS slept_at, woke_at::text AS woke_at, quality FROM sleep_logs WHERE user_id = $1 AND date BETWEEN $2::date AND $3::date", [user.id, from, today]),
@@ -98,6 +101,15 @@ export default async function HealthPage() {
             ))}
           </SimpleGrid>
           <Group gap={6} mt={6}><AddSheet label="Lanche" title="Lanche" fields={mealFields} hidden={{ date: today, meal: "lanche" }} action={saveMeal} /></Group>
+          {planned.filter((p) => p.label && !meals.some((m) => m.meal === p.meal && m.description === p.label)).length > 0 && (
+            <Stack gap={4} mt="xs">
+              <Text size="xs" fw={800}>Planejado para hoje</Text>
+              {planned.filter((p) => p.label && !meals.some((m) => m.meal === p.meal && m.description === p.label)).map((p) => (
+                <form key={p.meal} action={registerPlannedMeal}><input type="hidden" name="meal" value={p.meal} /><input type="hidden" name="description" value={p.label} />
+                  <Group gap="xs" wrap="nowrap" justify="space-between"><Text size="sm" truncate>{MEALS.find((x) => x.value === p.meal)?.label}: {p.label}</Text><Button type="submit" size="compact-xs" variant="white" color="gray">Registrar</Button></Group></form>
+              ))}
+            </Stack>
+          )}
           <Stack gap={6} mt="xs">
             {MEALS.flatMap((ml) => meals.filter((x) => x.meal === ml.value).map((x) => (
               <FormSheet key={x.id} title={ml.label} fields={mealFields} values={{ id: x.id, description: x.description }} hidden={{ date: today, meal: ml.value }} action={saveMeal} remove={deleteMeal}>
