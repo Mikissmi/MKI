@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/auth/session";
 import { ensureDayPlan } from "@/lib/planner/service";
 import { loadPlanContext } from "@/lib/planner/context";
 import { buildRulesPlan, suggestForMinutes } from "@/lib/planner/rules";
-import { fmtMin, localDateKey, parseTime } from "@/lib/time";
+import { fmtMin, isDateKey, localDateKey, parseTime } from "@/lib/time";
 
 const idOf = (f: FormData) => z.string().uuid().safeParse(f.get("id"));
 const done = () => revalidatePath("/", "layout");
@@ -49,13 +49,25 @@ export async function removeBlock(form: FormData) {
   await query("DELETE FROM plan_blocks WHERE id = $1 AND user_id = $2", [id.data, user.id]); done();
 }
 
-export async function acceptAllBlocks() {
+/** Aceita as sugestões de um dia (hoje por padrão; o chat passa a data do plano, ex.: amanhã). Serve também como action de formulário. */
+export async function acceptAllBlocks(arg?: string | FormData) {
   const user = await requireUser();
   const today = localDateKey();
+  const date = typeof arg === "string" && isDateKey(arg) && arg >= today ? arg : today;
   // propostas de mover o início (ajuste) são aplicadas; as demais viram sugestões aceitas
-  const adjusts = await query<AdjustRow>("SELECT id, date::text AS date, start_min, ref_id FROM plan_blocks WHERE user_id = $1 AND date = $2::date AND status = 'proposed' AND kind = 'ajuste' AND ref_type = 'routine_block'", [user.id, today]);
+  const adjusts = await query<AdjustRow>("SELECT id, date::text AS date, start_min, ref_id FROM plan_blocks WHERE user_id = $1 AND date = $2::date AND status = 'proposed' AND kind = 'ajuste' AND ref_type = 'routine_block'", [user.id, date]);
   for (const a of adjusts) await applyAdjust(user.id, a);
-  await query("UPDATE plan_blocks SET status = 'accepted' WHERE user_id = $1 AND date = $2::date AND status = 'proposed'", [user.id, today]); done();
+  await query("UPDATE plan_blocks SET status = 'accepted' WHERE user_id = $1 AND date = $2::date AND status = 'proposed'", [user.id, date]); done();
+}
+
+/** "Sugerir atividades para este dia" (Agenda): IA primeiro, regras como plano B, para a data escolhida (hoje ou futura). */
+export async function planDay(form: FormData) {
+  const user = await requireUser();
+  const date = form.get("date");
+  const today = localDateKey();
+  if (typeof date !== "string" || !isDateKey(date) || date < today) return;
+  await ensureDayPlan(user.id, date, { force: true, today });
+  done();
 }
 
 /** "Trocar": o motor de regras escolhe outra sugestão para o mesmo horário (sem gastar chamadas de IA). */

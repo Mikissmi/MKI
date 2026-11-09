@@ -2,7 +2,9 @@ import { Box, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { query } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { AI_DAILY_LIMIT, getSettings } from "@/lib/settings";
-import { aiAvailability, aiUsageToday } from "@/lib/planner/service";
+import { aiAvailability, aiUsageToday, lastAiFailure } from "@/lib/planner/service";
+import { aiFailureText } from "@/lib/ai/messages";
+import { AiTestButton } from "@/components/AiTestButton";
 import { ACCENTS } from "@/lib/accent";
 import { moneyInput } from "@/lib/format";
 import { localDateKey, zonedToUtc, addDays } from "@/lib/time";
@@ -25,11 +27,12 @@ export default async function SettingsPage() {
   const user = await requireUser();
   const s = await getSettings(user.id);
   const today = localDateKey();
-  const [usage, plans, reasons, avail] = await Promise.all([
+  const [usage, plans, reasons, avail, failure] = await Promise.all([
     aiUsageToday(user.id, today),
     query<{ n: string }>("SELECT count(*)::text AS n FROM ai_requests WHERE user_id = $1 AND outcome = 'rules' AND created_at >= $2", [user.id, zonedToUtc(addDays(today, -6), 0).toISOString()]),
     query<{ reason: string | null; n: string }>("SELECT reason, count(*)::text AS n FROM ai_requests WHERE user_id = $1 AND outcome = 'rules' AND created_at >= $2 GROUP BY reason ORDER BY count(*) DESC", [user.id, zonedToUtc(addDays(today, -6), 0).toISOString()]),
     aiAvailability(user.id, s),
+    lastAiFailure(user.id),
   ]);
   const goalFields: Field[] = [
     { name: "waterGoal", label: "Meta de água (copos por dia)", type: "decimal", required: true },
@@ -86,6 +89,8 @@ export default async function SettingsPage() {
               <Panel tone="plain" p="sm"><Text size="xs">IA usada hoje</Text><Text fw={800} fz={22}>{usage}<Text span size="sm" c="dimmed"> / {AI_DAILY_LIMIT}</Text></Text></Panel>
               <Panel tone="plain" p="sm"><Text size="xs">Plano B (7 dias)</Text><Text fw={800} fz={22}>{plans[0]?.n ?? 0} <Text span size="sm" c="dimmed">vezes</Text></Text></Panel>
             </SimpleGrid>
+            {failure && <Text size="sm" role="alert" fw={600}>Último erro da IA: {aiFailureText(failure.reason, failure.detail)}</Text>}
+            <AiTestButton />
             {reasons.length > 0 && <Text size="xs" style={{ opacity: 0.9 }}>Motivos do plano B: {reasons.map((r) => `${REASON[r.reason ?? ""] ?? r.reason ?? "regras"} (${r.n})`).join(", ")}.</Text>}
           </Stack>
         </Panel>

@@ -1,7 +1,8 @@
-export type AiFailReason = "no_key" | "quota" | "timeout" | "http" | "format";
+export type AiFailReason = "no_key" | "quota" | "timeout" | "http" | "format" | "auth" | "model";
 
 export class AiError extends Error {
-  constructor(public reason: AiFailReason, message?: string) {
+  /** `detail` é a mensagem curta devolvida pelo provedor (nunca contém a chave). */
+  constructor(public reason: AiFailReason, message?: string, public detail?: string, public status?: number) {
     super(message ?? reason);
   }
 }

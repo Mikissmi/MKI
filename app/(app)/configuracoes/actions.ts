@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { query } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
-import { getSettings, patchSettings, type AiShare } from "@/lib/settings";
+import { getSettings, patchSettings, AI_DAILY_LIMIT, type AiShare } from "@/lib/settings";
+import { AiError, getProvider } from "@/lib/ai";
+import { aiFailureText } from "@/lib/ai/messages";
+import { aiUsageToday } from "@/lib/planner/service";
 import { optInt, optMoneyCents, optText, reqInt } from "@/lib/schema-kit";
 import type { FormState } from "@/lib/agenda/schemas";
 
@@ -59,3 +62,25 @@ export async function clearAiLog() {
   done();
 }
 void optInt;
+
+/**
+ * "Testar IA agora": faz uma chamada mínima ao Gemini (ignora a espera após falha) e mostra o resultado exato.
+ * Conta no limite diário. Se der certo, a IA volta a ficar disponível na hora.
+ */
+export async function testAi(): Promise<{ ok: boolean; message: string }> {
+  const u = await requireUser();
+  const provider = getProvider();
+  if (!provider) return { ok: false, message: aiFailureText("no_key") + " Confira o nome da variável, se ela vale para Production e se houve um novo deploy depois de salvá-la." };
+  if ((await aiUsageToday(u.id)) >= AI_DAILY_LIMIT) return { ok: false, message: `O limite de ${AI_DAILY_LIMIT} chamadas de hoje já foi usado.` };
+  try {
+    const text = await provider.generate({ system: "Responda apenas com a palavra: ok", prompt: "Teste de conexão." });
+    await query("INSERT INTO ai_requests (user_id, kind, outcome, provider_called) VALUES ($1,'test','ai',true)", [u.id]);
+    done();
+    return { ok: true, message: `Funcionou. O Gemini (${provider.name.replace("gemini:", "")}) respondeu: "${text.trim().slice(0, 40)}".` };
+  } catch (e) {
+    const err = e instanceof AiError ? e : new AiError("http", e instanceof Error ? e.message : undefined);
+    await query("INSERT INTO ai_requests (user_id, kind, outcome, reason, provider_called, response) VALUES ($1,'test','failed',$2,true,$3::jsonb)", [u.id, err.reason, JSON.stringify({ detail: err.detail ?? null })]);
+    done();
+    return { ok: false, message: aiFailureText(err.reason, err.detail) };
+  }
+}

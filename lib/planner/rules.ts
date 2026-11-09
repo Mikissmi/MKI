@@ -155,18 +155,20 @@ export function suggestForMinutes(ctx: PlanContext, minutes: number): PlanBlock 
   return null;
 }
 
-export type Intent = { kind: "light" | "minutes" | "screenfree" | "plan" | "unknown"; minutes?: number };
+export type Intent = { kind: "light" | "minutes" | "screenfree" | "plan" | "week" | "unknown"; minutes?: number; day?: "amanha" };
 
-/** Entende pedidos simples no modo regras (cansada, pouco tempo, sem tela). */
+/** Entende pedidos simples no modo regras (cansada, pouco tempo, sem tela, amanhã, semana). */
 export function parseIntent(text: string): Intent {
   const t = text.toLowerCase();
+  const day = /amanh[ãa]/.test(t) ? ("amanha" as const) : undefined;
   const m = /(\d{1,3})\s*(min|minutos)\b/.exec(t) ?? null;
   const h = /(\d{1,2})\s*(h|hora|horas)\b/.exec(t) ?? null;
-  if (/cansad|exaust|sem energia|esgotad|sem for[cç]a|baixo astral|desanimad|dia leve/.test(t)) return { kind: "light" };
-  if (m) return { kind: "minutes", minutes: Math.min(240, Number(m[1])) };
-  if (h) return { kind: "minutes", minutes: Math.min(240, Number(h[1]) * 60) };
-  if (/sem tela|desligar|menos tela|offline/.test(t)) return { kind: "screenfree" };
-  if (/plano|organiz|reorganiz|meu dia|rotina/.test(t)) return { kind: "plan" };
+  if (/cansad|exaust|sem energia|esgotad|sem for[cç]a|baixo astral|desanimad|dia leve/.test(t)) return { kind: "light", day };
+  if (m) return { kind: "minutes", minutes: Math.min(240, Number(m[1])), day };
+  if (h) return { kind: "minutes", minutes: Math.min(240, Number(h[1]) * 60), day };
+  if (/semana|pr[óo]ximos dias|7 dias|sete dias/.test(t)) return { kind: "week" };
+  if (/sem tela|desligar|menos tela|offline/.test(t)) return { kind: "screenfree", day };
+  if (/plano|organiz|reorganiz|meu dia|rotina|planej|agenda/.test(t) || day) return { kind: "plan", day };
   return { kind: "unknown" };
 }
 

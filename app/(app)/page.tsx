@@ -5,7 +5,8 @@ import { requireUser } from "@/lib/auth/session";
 import { fetchCheckin, fetchOccurrences } from "@/lib/agenda/queries";
 import { freeSlots } from "@/lib/agenda/free-slots";
 import { isScheduled } from "@/lib/habits";
-import { ensureDayPlan, getPlanState, aiUsageToday } from "@/lib/planner/service";
+import { ensureDayPlan, getPlanState, aiUsageToday, lastAiFailure } from "@/lib/planner/service";
+import { aiFailureText } from "@/lib/ai/messages";
 import { pendingRetro } from "@/lib/retro";
 import { AI_DAILY_LIMIT } from "@/lib/settings";
 import { formatDateLong, localDateKey, localMinutes, cap } from "@/lib/time";
@@ -69,6 +70,7 @@ export default async function TodayPage() {
   const slots = freeSlots(taken, Math.max(ctx.wake, nowMin), ctx.sleep);
   const hasProposed = blocks.some((b) => b.status === "proposed");
   const rulesMode = mode.source === "rules" && mode.reason && mode.reason !== "manual";
+  const failure = rulesMode && ["failed", "format", "cooldown"].includes(mode.reason!) ? await lastAiFailure(user.id) : null;
   const name = settings.displayName ?? user.username;
 
   return (
@@ -98,7 +100,7 @@ export default async function TodayPage() {
             <LinkButton href="/agenda/evento/novo" size="compact-xs" variant="light">Evento</LinkButton>
           </Group>}
         >
-          {rulesMode && <Box mb="sm" title={MODE_TEXT[mode.reason!] ?? ""}><Pill tone="lavender" icon="lock">modo regras</Pill>{" "}<Text component="span" size="xs" c="dimmed">{MODE_TEXT[mode.reason!]}</Text></Box>}
+          {rulesMode && <Box mb="sm" title={MODE_TEXT[mode.reason!] ?? ""}><Pill tone="lavender" icon="lock">modo regras</Pill>{" "}<Text component="span" size="xs" c="dimmed">{failure ? aiFailureText(failure.reason, failure.detail) : MODE_TEXT[mode.reason!]}</Text></Box>}
           {autoLoad ? <PlanAutoLoader /> : <PlanTimeline occurrences={occurrences} blocks={blocks} freeSlots={slots} nowMin={nowMin} lightDay={ctx.lightDay} />}
           <Group gap="xs" mt="sm">
             {hasProposed && <form action={acceptAllBlocks}><Button type="submit" size="compact-sm">Aceitar todas</Button></form>}

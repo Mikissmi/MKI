@@ -9,10 +9,13 @@ import { acceptAllBlocks } from "@/app/(app)/plan-actions";
 import { fmtDuration, fmtMin } from "@/lib/time";
 
 export type ChatBlock = { startMin: number; durationMin: number; kind: string; title: string; reason: string };
-export type ChatMsg = { id: string; role: "user" | "assistant"; content: string; plan: ChatBlock[] | null; source: string | null };
+export type ChatMsg = { id: string; role: "user" | "assistant"; content: string; plan: ChatBlock[] | null; source: string | null; planDate?: string | null };
+
+const todayKey = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+const planLabel = (d?: string | null) => (d && d > todayKey() ? "Aceitar plano de amanhã" : "Aceitar plano");
 
 const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", atividade: "star", habito: "check", pausa: "leaf", mini_vitoria: "sparkles", exercicio: "run", podcast: "headphones", ajuste: "clock" };
-const SUGGESTIONS = ["Hoje estou cansada, reorganiza meu dia", "Tenho 40 minutos livres", "Quero um dia com menos tela"];
+const SUGGESTIONS = ["Hoje estou cansada, reorganiza meu dia", "Organize meu dia amanhã", "Tenho 40 minutos livres", "Organize minha semana"];
 
 export function ChatClient({ initial }: { initial: ChatMsg[] }) {
   const router = useRouter();
@@ -35,7 +38,7 @@ export function ChatClient({ initial }: { initial: ChatMsg[] }) {
       const res = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: m }) });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setMsgs((x) => [...x, { id: `a${Date.now()}`, role: "assistant", content: data.reply, plan: data.blocks?.length ? data.blocks : null, source: data.source }]);
+      setMsgs((x) => [...x, { id: `a${Date.now()}`, role: "assistant", content: data.reply, plan: data.blocks?.length ? data.blocks : null, source: data.source, planDate: data.date }]);
       router.refresh();
     } catch {
       setMsgs((x) => [...x, { id: `e${Date.now()}`, role: "assistant", content: "Não consegui responder agora. Tente de novo em instantes.", plan: null, source: "rules" }]);
@@ -63,8 +66,8 @@ export function ChatClient({ initial }: { initial: ChatMsg[] }) {
                   </Group>
                 ))}
                 <Group gap="xs" mt={4} grow>
-                  <Button size="compact-md" disabled={accepted.has(m.id)} onClick={() => startTransition(async () => { await acceptAllBlocks(); setAccepted((s) => new Set(s).add(m.id)); router.refresh(); })}>
-                    {accepted.has(m.id) ? "Plano aceito" : "Aceitar plano"}
+                  <Button size="compact-md" disabled={accepted.has(m.id)} onClick={() => startTransition(async () => { await acceptAllBlocks(m.planDate ?? undefined); setAccepted((s) => new Set(s).add(m.id)); router.refresh(); })}>
+                    {accepted.has(m.id) ? "Plano aceito" : planLabel(m.planDate)}
                   </Button>
                   <Button size="compact-md" variant="light" color="sage" onClick={() => { setText("Ajusta: "); input.current?.focus(); }}>Ajustar</Button>
                 </Group>

@@ -80,9 +80,26 @@ describe("sugestão por tempo e intenção", () => {
   });
   it("entende cansaço, minutos e sem tela", () => {
     expect(parseIntent("hoje estou cansada, reorganiza meu dia").kind).toBe("light");
-    expect(parseIntent("tenho 40 minutos livres")).toEqual({ kind: "minutes", minutes: 40 });
+    expect(parseIntent("tenho 40 minutos livres")).toEqual({ kind: "minutes", minutes: 40, day: undefined });
     expect(parseIntent("quero um dia sem tela").kind).toBe("screenfree");
     expect(parseIntent("qual a capital da França?").kind).toBe("unknown");
+  });
+});
+
+describe("pedidos com dia e semana", () => {
+  it("entende 'amanhã' e mantém a intenção", () => {
+    expect(parseIntent("Vamos organizar meu dia amanhã")).toEqual({ kind: "plan", day: "amanha" });
+    expect(parseIntent("amanhã vou estar cansada")).toEqual({ kind: "light", day: "amanha" });
+    expect(parseIntent("quero um dia sem tela amanhã")).toEqual({ kind: "screenfree", day: "amanha" });
+    expect(parseIntent("amanhã")).toEqual({ kind: "plan", day: "amanha" });
+  });
+  it("entende pedido da semana (sem confundir com 'hoje')", () => {
+    expect(parseIntent("Organize minha semana")).toEqual({ kind: "week" });
+    expect(parseIntent("planeja os próximos dias")).toEqual({ kind: "week" });
+    expect(parseIntent("organiza meu dia").day).toBeUndefined();
+  });
+  it("sem pedido reconhecível continua 'unknown'", () => {
+    expect(parseIntent("qual a capital da França?")).toEqual({ kind: "unknown" });
   });
 });
 

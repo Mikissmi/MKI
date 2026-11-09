@@ -97,7 +97,7 @@ export async function summarizeNewsWithAi(userId: string, id: string): Promise<A
     return { ok: true, summary };
   } catch (e) {
     const reason = e instanceof AiError ? e.reason : "http";
-    await query("INSERT INTO ai_requests (user_id, kind, outcome, reason, provider_called) VALUES ($1,'summary','failed',$2,true)", [userId, reason]);
+    await query("INSERT INTO ai_requests (user_id, kind, outcome, reason, provider_called, response) VALUES ($1,'summary','failed',$2,true,$3::jsonb)", [userId, reason, JSON.stringify({ detail: e instanceof AiError ? (e.detail ?? null) : null })]);
     return { ok: false, error: "Não consegui resumir agora. O resumo simples continua disponível." };
   }
 }

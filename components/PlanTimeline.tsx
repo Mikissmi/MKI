@@ -14,14 +14,14 @@ const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", at
 type Item = { at: number; occ?: Occurrence; block?: BlockRow; free?: Interval };
 
 /** Linha do tempo do dia: compromissos, rotina, sugestões (aceitar / trocar / dispensar) e horários livres. */
-export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay }: { occurrences: Occurrence[]; blocks: BlockRow[]; freeSlots: Interval[]; nowMin: number; lightDay: boolean }) {
+export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay, emptyText = "Nada marcado para hoje." }: { occurrences: Occurrence[]; blocks: BlockRow[]; freeSlots: Interval[]; nowMin: number; lightDay: boolean; emptyText?: string }) {
   const items: Item[] = [
     ...occurrences.map((occ) => ({ at: occ.startMin, occ })),
     ...blocks.map((block) => ({ at: block.start_min, block })),
     ...freeSlots.map((free) => ({ at: free.startMin, free })),
   ].sort((a, b) => a.at - b.at);
 
-  if (items.length === 0) return <Text c="dimmed" size="sm">Nada marcado para hoje.</Text>;
+  if (items.length === 0) return <Text c="dimmed" size="sm">{emptyText}</Text>;
 
   return (
     <Stack gap={8}>

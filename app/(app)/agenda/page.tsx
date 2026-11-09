@@ -1,14 +1,17 @@
 import { z } from "zod";
-import { Box, Group, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, Stack, Text } from "@mantine/core";
+import { Icon } from "@/lib/icons";
 import { requireUser } from "@/lib/auth/session";
 import { getSettings } from "@/lib/settings";
 import { fetchOccurrences } from "@/lib/agenda/queries";
 import { freeSlots } from "@/lib/agenda/free-slots";
 import { busyIntervals } from "@/lib/agenda/occurrences";
-import { addDays, addMonths, cap, formatDateLong, formatMonth, isDateKey, localDateKey, parseTime, startOfMonth, startOfWeek } from "@/lib/time";
+import { addDays, addMonths, cap, localMinutes, formatDateLong, formatMonth, isDateKey, localDateKey, parseTime, startOfMonth, startOfWeek } from "@/lib/time";
 import { PageHeader } from "@/components/PageHeader";
 import { LinkButton } from "@/components/LinkButton";
-import { DayTimeline } from "@/components/agenda/DayTimeline";
+import { PlanTimeline, type BlockRow } from "@/components/PlanTimeline";
+import { planDay, acceptAllBlocks } from "../plan-actions";
+import { query } from "@/lib/db";
 import { WeekView } from "@/components/agenda/WeekView";
 import { MonthView } from "@/components/agenda/MonthView";
 
@@ -32,7 +35,10 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const href = (v: string, d: string) => `/agenda?v=${v}&d=${d}`;
 
   const dayOccs = view === "dia" ? occurrences : [];
-  const slots = view === "dia" ? freeSlots(busyIntervals(dayOccs), parseTime(settings.wake) ?? 420, parseTime(settings.sleep) ?? 1380) : [];
+  // sugestões do plano daquele dia (aceitas e propostas); "ajuste" não ocupa tempo livre
+  const blocks = view === "dia" ? await query<BlockRow>("SELECT id, start_min, duration_min, kind, title, reason, status, screen_type FROM plan_blocks WHERE user_id = $1 AND date = $2::date AND status IN ('proposed','accepted') ORDER BY start_min", [user.id, date]) : [];
+  const slots = view === "dia" ? freeSlots([...busyIntervals(dayOccs), ...blocks.filter((b) => b.kind !== "ajuste").map((b) => ({ startMin: b.start_min, endMin: b.start_min + b.duration_min }))], parseTime(settings.wake) ?? 420, parseTime(settings.sleep) ?? 1380) : [];
+  const nowMin = date === today ? localMinutes() : date < today ? 1440 : -1;
 
   return (
     <>
@@ -52,7 +58,15 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
           <LinkButton href={href(view, next)} variant="subtle" size="md" px="sm" aria-label="Próximo">›</LinkButton>
         </Group>
 
-        {view === "dia" && <DayTimeline occurrences={dayOccs} freeSlots={slots} nowMin={undefined} emptyText="Nada marcado. Dia livre" />}
+        {view === "dia" && (<>
+          <PlanTimeline occurrences={dayOccs} blocks={blocks} freeSlots={slots} nowMin={nowMin} lightDay={false} emptyText="Nada marcado. Dia livre." />
+          {date >= today && (
+            <Group gap="xs">
+              <form action={planDay}><input type="hidden" name="date" value={date} /><Button type="submit" size="compact-md" variant="light" leftSection={<Icon name="robot" size={16} />}>Sugerir atividades para este dia</Button></form>
+              {blocks.some((b) => b.status === "proposed") && <form action={async () => { "use server"; await acceptAllBlocks(date); }}><Button type="submit" size="compact-md">Aceitar todas</Button></form>}
+            </Group>
+          )}
+        </>)}
         {view === "semana" && <WeekView start={from} occurrences={occurrences} today={today} />}
         {view === "mes" && <MonthView month={startOfMonth(date)} occurrences={occurrences} today={today} />}
 
