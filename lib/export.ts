@@ -10,7 +10,7 @@ export const EXPORT_TABLES = [
   { table: "project_steps", label: "Etapas de projetos" }, { table: "news_items", label: "Notícias" }, { table: "meal_plans", label: "Planejamento de refeições" }, { table: "shopping_items", label: "Lista de compras" },
   { table: "cooked_log", label: "O que cozinhei" }, { table: "creative_entries", label: "Versões criativas" }, { table: "inspirations", label: "Inspirações" }, { table: "challenges", label: "Desafios" },
   { table: "creative_sessions", label: "Sessões criativas" }, { table: "trip_days", label: "Roteiros" }, { table: "packing_items", label: "Mala" }, { table: "trip_entries", label: "Diário de viagem" },
-  { table: "expenses", label: "Gastos" }, { table: "events", label: "Eventos" }, { table: "routine_blocks", label: "Rotina-modelo" }, { table: "checkins", label: "Check-ins" },
+  { table: "expenses", label: "Gastos" }, { table: "events", label: "Eventos" }, { table: "routine_blocks", label: "Rotina-modelo" }, { table: "routine_overrides", label: "Exceções da rotina" }, { table: "checkins", label: "Check-ins" },
   { table: "sleep_logs", label: "Sono" }, { table: "water_logs", label: "Água" }, { table: "meal_logs", label: "Refeições" }, { table: "workout_logs", label: "Treinos" },
   { table: "body_measures", label: "Medidas" }, { table: "retrospectives", label: "Retrospectivas" },
 ] as const;

@@ -1,17 +1,15 @@
-import Link from "next/link";
 import { Box, Button, Group, Stack, Text } from "@mantine/core";
-import { categoryLabel } from "@/lib/agenda/categories";
 import type { Occurrence } from "@/lib/agenda/occurrences";
 import type { Interval } from "@/lib/agenda/free-slots";
 import { fmtDuration, fmtMin } from "@/lib/time";
-import { TONES, categoryTone, type Tone } from "@/lib/tones";
+import { TONES, type Tone } from "@/lib/tones";
 import { IconTile, Pill } from "@/components/ui/Panel";
+import { OccurrenceCard } from "@/components/agenda/OccurrenceCard";
 import { acceptBlock, dismissBlock, removeBlock, swapBlock } from "@/app/(app)/plan-actions";
 
 export type BlockRow = { id: string; start_min: number; duration_min: number; kind: string; title: string; reason: string | null; status: "proposed" | "accepted"; screen_type: string | null };
 
-const CATEGORY_ICON: Record<string, string> = { trabalho: "briefcase", estudo: "book", pessoal: "heart", saude: "leaf", lazer: "star", outro: "calendar" };
-const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", atividade: "star", habito: "check", pausa: "leaf", mini_vitoria: "sparkles", exercicio: "run" };
+const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", atividade: "star", habito: "check", pausa: "leaf", mini_vitoria: "sparkles", exercicio: "run", podcast: "headphones", ajuste: "clock" };
 
 type Item = { at: number; occ?: Occurrence; block?: BlockRow; free?: Interval };
 
@@ -68,21 +66,7 @@ export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay 
           );
         }
         const o = it.occ!;
-        const tone = categoryTone(o.category);
-        const t = TONES[tone];
-        const past = o.endMin <= nowMin;
-        const card = (
-          <Group wrap="nowrap" p="xs" pr="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 20, color: t.fg }}>
-            <div style={{ opacity: past ? 0.45 : 1 }}><IconTile icon={CATEGORY_ICON[o.category] ?? "calendar"} tone={tone} size={42} round /></div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <Text fw={800} size="sm" c="inherit" lh={1.25}>{fmtMin(o.startMin)}</Text>
-              <Text fw={600} size="sm" c="inherit" truncate>{o.title}</Text>
-              {o.location && <Text size="xs" c="inherit" style={{ opacity: 0.9 }} truncate>{o.location}</Text>}
-            </div>
-            <Pill tone={tone}>{past ? "passou" : o.kind === "routine" ? "rotina" : categoryLabel(o.category)}</Pill>
-          </Group>
-        );
-        return o.kind === "event" ? <Link key={o.key} href={`/agenda/evento/${o.id}`} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link> : <div key={o.key}>{card}</div>;
+        return <OccurrenceCard key={o.key} o={o} past={o.endMin <= nowMin} />;
       })}
       {lightDay && <Text size="xs" c="dimmed">Dia leve: sem cobranças, sem atrasos.</Text>}
     </Stack>

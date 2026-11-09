@@ -45,9 +45,9 @@ function FieldInput({ f, value, error }: { f: Field; value: FormValues[string]; 
   }
 }
 
-function SheetForm({ fields, values, action, remove, hidden, submitLabel, onDone }: {
+function SheetForm({ fields, values, action, remove, hidden, submitLabel, removeLabel, onDone }: {
   fields: Field[]; values?: FormValues; action: (prev: FormState, fd: FormData) => Promise<FormState>; remove?: (fd: FormData) => Promise<void>;
-  hidden?: Record<string, string>; submitLabel: string; onDone: () => void;
+  hidden?: Record<string, string>; submitLabel: string; removeLabel: string; onDone: () => void;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
   const [deleting, setDeleting] = useState(false);
@@ -68,7 +68,7 @@ function SheetForm({ fields, values, action, remove, hidden, submitLabel, onDone
       {remove && id && (
         <ActionForm action={async (fd) => { setDeleting(true); await remove(fd); onDone(); }}>
           <input type="hidden" name="id" value={id} />
-          <Button type="submit" color="red" variant="subtle" fullWidth mt="xs" loading={deleting}>Excluir</Button>
+          <Button type="submit" color="red" variant="subtle" fullWidth mt="xs" loading={deleting}>{removeLabel}</Button>
         </ActionForm>
       )}
     </>
@@ -76,9 +76,9 @@ function SheetForm({ fields, values, action, remove, hidden, submitLabel, onDone
 }
 
 /** Gaveta com formulário. O conteúdo (children) é o gatilho clicável: um cartão da lista ou um botão. */
-export function FormSheet({ title, fields, values, action, remove, hidden, submitLabel, children, block = true, triggerLabel }: {
+export function FormSheet({ title, fields, values, action, remove, hidden, submitLabel, removeLabel = "Excluir", children, block = true, triggerLabel }: {
   title: string; fields: Field[]; values?: FormValues; action: (prev: FormState, fd: FormData) => Promise<FormState>; remove?: (fd: FormData) => Promise<void>;
-  hidden?: Record<string, string>; submitLabel?: string; children: ReactNode; block?: boolean; triggerLabel?: string;
+  hidden?: Record<string, string>; submitLabel?: string; removeLabel?: string; children: ReactNode; block?: boolean; triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const isEdit = typeof values?.id === "string";
@@ -86,7 +86,7 @@ export function FormSheet({ title, fields, values, action, remove, hidden, submi
     <>
       <UnstyledButton onClick={() => setOpen(true)} style={block ? { display: "block", width: "100%", textAlign: "left" } : undefined} aria-haspopup="dialog" aria-label={triggerLabel}>{children}</UnstyledButton>
       <Drawer opened={open} onClose={() => setOpen(false)} position="bottom" size="92%" radius="xl" title={<Text fw={800}>{title}</Text>} padding="md">
-        <SheetForm fields={fields} values={values} action={action} remove={remove} hidden={hidden} submitLabel={submitLabel ?? (isEdit ? "Salvar" : "Adicionar")} onDone={() => setOpen(false)} />
+        <SheetForm fields={fields} values={values} action={action} remove={remove} hidden={hidden} submitLabel={submitLabel ?? (isEdit ? "Salvar" : "Adicionar")} removeLabel={removeLabel} onDone={() => setOpen(false)} />
       </Drawer>
     </>
   );

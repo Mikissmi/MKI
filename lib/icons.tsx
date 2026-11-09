@@ -5,7 +5,7 @@ import {
   IconLeaf, IconLink, IconLuggage, IconMapPin, IconMountain, IconMovie, IconMoodCry, IconMoodHappy, IconMoodNeutral, IconMoodSad, IconMoodSmile, IconMoon, IconMusic, IconNews,
   IconNotebook, IconPalette, IconPencil, IconPhoto, IconPlane, IconPlant, IconReceipt, IconRun, IconSalad, IconScale, IconSettings, IconShoppingCart, IconSoup, IconSparkles, IconStar,
   IconSun, IconSunrise, IconTarget, IconToolsKitchen2, IconTrophy, IconWallet, IconWalk, IconYoga, IconBrain, IconHeadphones, IconMicrophone, IconBike, IconShirt, IconPizza,
-  IconTent, IconCompass, IconBrush, IconCheckbox, IconListCheck, IconWriting, IconRobot, IconRss, IconSearch, IconBell, IconSend, IconPlus, IconTrash, IconEdit, IconDots, IconX,
+  IconCar, IconTrain, IconTent, IconCompass, IconBrush, IconCheckbox, IconListCheck, IconWriting, IconRobot, IconRss, IconSearch, IconBell, IconSend, IconPlus, IconTrash, IconEdit, IconDots, IconX,
   IconChevronRight, IconChevronLeft, IconArrowLeft, IconArrowRight, IconDownload, IconUpload, IconLock, IconRefresh, IconPlayerPlay, IconPlayerSkipBack, IconPlayerSkipForward,
   IconExternalLink, IconFilter, IconUser, IconLogout, IconMoodSmileBeam, IconSquareCheck, IconShoppingBag, IconStarFilled, IconBookmarkFilled, IconSunHigh, IconSunset, IconNotes,
   IconMug, IconWand, IconEye, IconEyeOff, IconDeviceMobile, IconLayoutGrid, IconChartLine, IconTargetArrow, IconHome2, IconMoodWink, IconStars, IconMoodSpark,
@@ -26,7 +26,7 @@ export const ICONS: Record<string, IconCmp> = {
   gamepad: IconDeviceGamepad2, tv: IconDeviceTv, movie: IconMovie, scale: IconScale, shirt: IconShirt, download: IconDownload, upload: IconUpload, chart: IconChartPie, line: IconChartLine, target: IconTarget,
   "target-arrow": IconTargetArrow, sparkles: IconSparkles, stars: IconStars, wand: IconWand, lock: IconLock, refresh: IconRefresh, play: IconPlayerPlay, prev: IconPlayerSkipBack, next: IconPlayerSkipForward,
   external: IconExternalLink, filter: IconFilter, user: IconUser, logout: IconLogout, alarm: IconAlarm, bed: IconBed, notebook: IconNotebook, writing: IconWriting, notes: IconNotes, list: IconListCheck, tent: IconTent,
-  cookie: IconCookie, archive: IconArrowRight, flag: IconFlag, eye: IconEye, "eye-off": IconEyeOff, mobile: IconDeviceMobile, grid: IconLayoutGrid, back: IconArrowLeft, right: IconChevronRight, left: IconChevronLeft,
+  car: IconCar, train: IconTrain, cookie: IconCookie, archive: IconArrowRight, flag: IconFlag, eye: IconEye, "eye-off": IconEyeOff, mobile: IconDeviceMobile, grid: IconLayoutGrid, back: IconArrowLeft, right: IconChevronRight, left: IconChevronLeft,
   "mood-1": IconMoodCry, "mood-2": IconMoodSad, "mood-3": IconMoodNeutral, "mood-4": IconMoodSmile, "mood-5": IconMoodHappy, "mood-wink": IconMoodWink, "mood-beam": IconMoodSmileBeam, "mood-spark": IconMoodSpark,
   "battery-1": IconBattery1, "battery-2": IconBattery2, "battery-3": IconBattery3, "battery-4": IconBattery4, "battery-5": IconBatteryCharging, battery: IconBattery, robot2: IconRobot,
 };

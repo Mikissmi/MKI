@@ -7,14 +7,36 @@ import { requireUser } from "@/lib/auth/session";
 import { ensureDayPlan } from "@/lib/planner/service";
 import { loadPlanContext } from "@/lib/planner/context";
 import { buildRulesPlan, suggestForMinutes } from "@/lib/planner/rules";
-import { localDateKey } from "@/lib/time";
+import { fmtMin, localDateKey, parseTime } from "@/lib/time";
 
 const idOf = (f: FormData) => z.string().uuid().safeParse(f.get("id"));
 const done = () => revalidatePath("/", "layout");
 
+type AdjustRow = { id: string; date: string; start_min: number; ref_id: string | null };
+
+/**
+ * Aceitar uma proposta de "ajuste": aplica o novo início do bloco flexível como horário real do dia
+ * (só se ainda estiver dentro da janela) e remove a proposta. O plano fica desatualizado para ser refeito.
+ */
+async function applyAdjust(userId: string, a: AdjustRow): Promise<void> {
+  await query("DELETE FROM plan_blocks WHERE id = $1 AND user_id = $2", [a.id, userId]);
+  if (!a.ref_id) return;
+  const b = await queryOne<{ mode: string; e: string | null; l: string | null }>("SELECT mode, start_earliest::text AS e, start_latest::text AS l FROM routine_blocks WHERE id = $1 AND user_id = $2", [a.ref_id, userId]);
+  if (!b || b.mode !== "flexible") return;
+  const e = parseTime(b.e ?? "") ?? 0, l = parseTime(b.l ?? "") ?? 1439;
+  if (a.start_min < e || a.start_min > l) return;
+  await query(
+    `INSERT INTO routine_overrides (user_id, block_id, date, start_actual) VALUES ($1,$2,$3::date,$4)
+     ON CONFLICT (block_id, date) DO UPDATE SET start_actual = $4, canceled = false`, [userId, a.ref_id, a.date, fmtMin(a.start_min)]);
+  await query("UPDATE day_plans SET input_hash = '' WHERE user_id = $1 AND date = $2::date", [userId, a.date]);
+}
+
 export async function acceptBlock(form: FormData) {
   const user = await requireUser(); const id = idOf(form); if (!id.success) return;
-  await query("UPDATE plan_blocks SET status = 'accepted' WHERE id = $1 AND user_id = $2", [id.data, user.id]); done();
+  const adj = await queryOne<AdjustRow>("SELECT id, date::text AS date, start_min, ref_id FROM plan_blocks WHERE id = $1 AND user_id = $2 AND kind = 'ajuste' AND ref_type = 'routine_block'", [id.data, user.id]);
+  if (adj) await applyAdjust(user.id, adj);
+  else await query("UPDATE plan_blocks SET status = 'accepted' WHERE id = $1 AND user_id = $2", [id.data, user.id]);
+  done();
 }
 
 export async function dismissBlock(form: FormData) {
@@ -29,15 +51,21 @@ export async function removeBlock(form: FormData) {
 
 export async function acceptAllBlocks() {
   const user = await requireUser();
-  await query("UPDATE plan_blocks SET status = 'accepted' WHERE user_id = $1 AND date = $2::date AND status = 'proposed'", [user.id, localDateKey()]); done();
+  const today = localDateKey();
+  // propostas de mover o início (ajuste) são aplicadas; as demais viram sugestões aceitas
+  const adjusts = await query<AdjustRow>("SELECT id, date::text AS date, start_min, ref_id FROM plan_blocks WHERE user_id = $1 AND date = $2::date AND status = 'proposed' AND kind = 'ajuste' AND ref_type = 'routine_block'", [user.id, today]);
+  for (const a of adjusts) await applyAdjust(user.id, a);
+  await query("UPDATE plan_blocks SET status = 'accepted' WHERE user_id = $1 AND date = $2::date AND status = 'proposed'", [user.id, today]); done();
 }
 
 /** "Trocar": o motor de regras escolhe outra sugestão para o mesmo horário (sem gastar chamadas de IA). */
 export async function swapBlock(form: FormData) {
   const user = await requireUser(); const id = idOf(form); if (!id.success) return;
-  const old = await queryOne<{ date: string; start_min: number; duration_min: number; ref_id: string | null }>(
-    "SELECT date::text AS date, start_min, duration_min, ref_id FROM plan_blocks WHERE id = $1 AND user_id = $2", [id.data, user.id]);
+  const old = await queryOne<{ date: string; start_min: number; duration_min: number; ref_id: string | null; kind: string }>(
+    "SELECT date::text AS date, start_min, duration_min, ref_id, kind FROM plan_blocks WHERE id = $1 AND user_id = $2", [id.data, user.id]);
   if (!old) return;
+  // proposta de mover o início não tem alternativa: "trocar" só a dispensa
+  if (old.kind === "ajuste") { await query("UPDATE plan_blocks SET status = 'dismissed' WHERE id = $1 AND user_id = $2", [id.data, user.id]); return done(); }
   const today = localDateKey();
   const current = await query<{ ref_id: string | null }>("SELECT ref_id FROM plan_blocks WHERE user_id = $1 AND date = $2::date AND status <> 'dismissed'", [user.id, old.date]);
   const exclude = current.map((c) => c.ref_id).filter((x): x is string => Boolean(x));

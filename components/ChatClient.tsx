@@ -11,7 +11,7 @@ import { fmtDuration, fmtMin } from "@/lib/time";
 export type ChatBlock = { startMin: number; durationMin: number; kind: string; title: string; reason: string };
 export type ChatMsg = { id: string; role: "user" | "assistant"; content: string; plan: ChatBlock[] | null; source: string | null };
 
-const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", atividade: "star", habito: "check", pausa: "leaf", mini_vitoria: "sparkles", exercicio: "run" };
+const KIND_ICON: Record<string, string> = { leitura: "book2", artigo: "news", atividade: "star", habito: "check", pausa: "leaf", mini_vitoria: "sparkles", exercicio: "run", podcast: "headphones", ajuste: "clock" };
 const SUGGESTIONS = ["Hoje estou cansada, reorganiza meu dia", "Tenho 40 minutos livres", "Quero um dia com menos tela"];
 
 export function ChatClient({ initial }: { initial: ChatMsg[] }) {

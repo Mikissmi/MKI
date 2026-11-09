@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/session";
 import { getSettings } from "@/lib/settings";
 import { fetchOccurrences } from "@/lib/agenda/queries";
 import { freeSlots } from "@/lib/agenda/free-slots";
+import { busyIntervals } from "@/lib/agenda/occurrences";
 import { addDays, addMonths, cap, formatDateLong, formatMonth, isDateKey, localDateKey, parseTime, startOfMonth, startOfWeek } from "@/lib/time";
 import { PageHeader } from "@/components/PageHeader";
 import { LinkButton } from "@/components/LinkButton";
@@ -31,7 +32,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const href = (v: string, d: string) => `/agenda?v=${v}&d=${d}`;
 
   const dayOccs = view === "dia" ? occurrences : [];
-  const slots = view === "dia" ? freeSlots(dayOccs, parseTime(settings.wake) ?? 420, parseTime(settings.sleep) ?? 1380) : [];
+  const slots = view === "dia" ? freeSlots(busyIntervals(dayOccs), parseTime(settings.wake) ?? 420, parseTime(settings.sleep) ?? 1380) : [];
 
   return (
     <>

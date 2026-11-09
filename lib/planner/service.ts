@@ -4,8 +4,8 @@ import { AI_DAILY_LIMIT, type Settings } from "@/lib/settings";
 import { fmtMin, localDateKey, zonedToUtc } from "@/lib/time";
 import { freeSlots } from "@/lib/agenda/free-slots";
 import { loadPlanContext, type LoadedContext } from "./context";
-import { buildRulesPlan, buildScreenFreePlan, parseIntent, suggestForMinutes } from "./rules";
-import { aiPlanSchema, sanitizeAiBlocks } from "./validate";
+import { buildRulesPlan, buildScreenFreePlan, buildTravelSuggestions, parseIntent, suggestForMinutes } from "./rules";
+import { aiPlanSchema, sanitizeAiBlocks, sanitizeMoves } from "./validate";
 import type { PlanBlock, PlanContext } from "./types";
 
 export type PlanSource = "ai" | "rules" | "cache";
@@ -15,8 +15,10 @@ export type Availability = { ok: true } | { ok: false; reason: Exclude<RulesReas
 const SYSTEM = `Você é o assistente do MKI, um painel pessoal de rotina. Responda sempre em português do Brasil, com tom gentil e sem cobrança.
 Proponha blocos curtos de atividades apenas dentro dos horários livres informados; nunca use horários ocupados nem horários que já passaram.
 Responda SOMENTE com JSON válido neste formato:
-{"reply": string, "blocks": [{"start": "HH:MM", "durationMin": number, "kind": "leitura|atividade|habito|pausa|mini_vitoria|exercicio|artigo", "title": string, "reason": string}]}
-Se a pessoa está cansada ou com energia baixa, proponha no máximo 3 itens fáceis e curtos (Dia leve).`;
+{"reply": string, "blocks": [{"start": "HH:MM", "durationMin": number, "kind": "leitura|atividade|habito|pausa|mini_vitoria|exercicio|artigo|podcast", "title": string, "reason": string}], "moves": [{"title": string, "start": "HH:MM", "reason": string}]}
+Se a pessoa está cansada ou com energia baixa, proponha no máximo 3 itens fáceis e curtos (Dia leve).
+Os "compromissos" já incluem blocos de trabalho/estudo e os deslocamentos: não coloque nada por cima deles.
+Se houver "blocosFlexiveis" ainda não confirmados, você pode propor mover o início de um deles dentro da janela (campo "moves", com o título do bloco e o novo horário) quando isso ajudar a encaixar atividades. É só uma proposta: deixe "moves" vazio se não ajudar.`;
 
 // ---------- disponibilidade da IA ----------
 
@@ -59,6 +61,7 @@ export function buildAiPrompt(loaded: LoadedContext, request?: string): string {
     atividadesFavoritas: ctx.activities.map((a) => ({ nome: a.name, minutos: a.minutes, energia: a.energy, tela: a.screen, diasSemFazer: a.daysSince })),
     miniVitorias: ctx.quickWins.map((q) => ({ nome: q.title, minutos: q.minutes })),
     diaLeve: ctx.lightDay,
+    blocosFlexiveis: ctx.flexBlocks.map((b) => ({ titulo: b.title, inicioAtual: fmtMin(b.startMin), duracaoMin: b.durationMin, janela: { maisCedo: fmtMin(b.earliest), maisTarde: fmtMin(b.latest) }, confirmado: b.confirmed })),
   };
   if (!settings.aiShare.agenda) payload.compromissos = ctx.busy.length ? "há compromissos nos horários ocupados" : [];
   if (settings.aiShare.mood) { payload.humor = ctx.mood; payload.energia = ctx.energy; }
@@ -140,11 +143,16 @@ export async function ensureDayPlan(userId: string, date: string, opts: { force?
     if (avail.ok) {
       try {
         const text = await getProvider()!.generate({ system: SYSTEM, prompt: buildAiPrompt(loaded), json: true });
-        const blocks = attachRefs(sanitizeAiBlocks(parseAi(text), ctx), ctx);
-        if (blocks.length === 0 && ctx.lightDay === false && freeSlots(ctx.busy, Math.max(ctx.wake, ctx.nowMin ?? ctx.wake), ctx.sleep).length > 0) {
+        const ai = parseAi(text);
+        const blocks = attachRefs(sanitizeAiBlocks(ai, ctx), ctx);
+        const moves = ctx.lightDay ? [] : sanitizeMoves(ai, ctx);
+        // sem nenhum bloco válido e sem proposta de ajuste utilizável, a resposta não serve: cai nas regras
+        if (blocks.length === 0 && moves.length === 0 && ctx.lightDay === false && freeSlots(ctx.busy, Math.max(ctx.wake, ctx.nowMin ?? ctx.wake), ctx.sleep).length > 0) {
           throw new AiError("format", "nenhum bloco válido");
         }
-        await storePlan(userId, date, blocks, "ai", hash, null, ctx.lightDay && loaded.lightManual ? true : undefined);
+        // + sugestões no trajeto (regras) e propostas de mover o início de blocos flexíveis (só propostas)
+        const extras = ctx.lightDay ? [] : [...buildTravelSuggestions(ctx), ...moves];
+        await storePlan(userId, date, [...blocks, ...extras], "ai", hash, null, ctx.lightDay && loaded.lightManual ? true : undefined);
         await logRequest(userId, "plan", "ai", null, true, hash, { blocks: blocks.length });
         return { source: "ai", reason: null };
       } catch (e) {
@@ -181,7 +189,8 @@ export async function handleChat(userId: string, message: string): Promise<ChatR
       const text = await getProvider()!.generate({ system: SYSTEM, prompt: buildAiPrompt(loaded, message), json: true });
       const parsed = parseAi(text);
       const blocks = attachRefs(sanitizeAiBlocks(parsed, loaded.ctx), loaded.ctx);
-      if (blocks.length) await storePlan(userId, today, blocks, "ai", loaded.hash, null, intent.kind === "light" ? true : undefined);
+      const chatExtras = loaded.ctx.lightDay ? [] : [...buildTravelSuggestions(loaded.ctx), ...sanitizeMoves(parsed, loaded.ctx)];
+      if (blocks.length || chatExtras.length) await storePlan(userId, today, [...blocks, ...chatExtras], "ai", loaded.hash, null, intent.kind === "light" ? true : undefined);
       await logRequest(userId, "chat", "ai", null, true, loaded.hash, { blocks: blocks.length });
       result = { reply: parsed.reply || (blocks.length ? "Montei uma proposta para o seu dia." : "Tudo bem por aqui."), blocks, source: "ai", reason: null };
     } catch (e) {

@@ -9,7 +9,7 @@ export function WeekView({ start, occurrences, today }: { start: string; occurre
   return (
     <Stack gap="xs">
       {days.map((d) => {
-        const list = occurrences.filter((o) => o.date === d);
+        const list = occurrences.filter((o) => o.date === d && o.kind !== "travel");
         return (
           <Card key={d} padding="sm" style={d === today ? { borderColor: "var(--mantine-color-lotus-4)", borderWidth: 2 } : undefined}>
             <Group justify="space-between" mb={list.length ? 6 : 0}>
@@ -27,7 +27,7 @@ export function WeekView({ start, occurrences, today }: { start: string; occurre
                       <Text size="sm" truncate>{o.title}</Text>
                     </Link>
                   ) : (
-                    <Text size="sm" c="dimmed" truncate>{o.title} (rotina)</Text>
+                    <Text size="sm" c="dimmed" truncate td={o.canceled ? "line-through" : undefined}>{o.title} (rotina{o.flexible ? ", flexível" : ""}{o.canceled ? ", cancelado" : ""})</Text>
                   )}
                 </Group>
               ))}

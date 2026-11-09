@@ -64,7 +64,8 @@ export default async function TodayPage() {
   const headlines = await query<{ id: string; title: string; feed_title: string }>(
     "SELECT n.id, n.title, f.title AS feed_title FROM news_items n JOIN feeds f ON f.id = n.feed_id AND NOT f.muted WHERE n.user_id = $1 AND NOT n.read ORDER BY n.published_at DESC NULLS LAST, n.created_at DESC LIMIT 3", [user.id]);
 
-  const taken = [...ctx.busy, ...blocks.map((b) => ({ startMin: b.start_min, endMin: b.start_min + b.duration_min }))];
+  // propostas de "ajuste" (mover o início de um bloco) não ocupam tempo livre; o resto das sugestões ocupa
+  const taken = [...ctx.busy, ...blocks.filter((b) => b.kind !== "ajuste").map((b) => ({ startMin: b.start_min, endMin: b.start_min + b.duration_min }))];
   const slots = freeSlots(taken, Math.max(ctx.wake, nowMin), ctx.sleep);
   const hasProposed = blocks.some((b) => b.status === "proposed");
   const rulesMode = mode.source === "rules" && mode.reason && mode.reason !== "manual";

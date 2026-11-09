@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { expandEvents, expandRoutine, type EventRow } from "./occurrences";
+import { busyIntervals, expandEvents, expandRoutine, type EventRow, type RoutineBlock, type RoutineOverride } from "./occurrences";
 import { freeSlots } from "./free-slots";
 import { addMonths, localDateKey, localMinutes, startOfWeek, weekday, zonedToUtc } from "@/lib/time";
+
+const fixedBlock = (o: Partial<RoutineBlock> = {}): RoutineBlock => ({
+  id: "r", title: "Trabalho", weekdays: [1, 2, 3, 4, 5], startMin: 540, endMin: 1080, category: "trabalho", mode: "fixed",
+  startEarliest: null, startLatest: null, preferredStart: null, durationMin: null, travelTo: 0, travelFrom: 0, travelMode: null, travelSuggestions: false, ...o,
+});
+/** Trabalho flexível do exemplo do doc: janela 08:00–10:00, 8 h, ida 40 min, volta 50 min. */
+const flexBlock = (o: Partial<RoutineBlock> = {}): RoutineBlock => fixedBlock({
+  mode: "flexible", startEarliest: 480, startLatest: 600, preferredStart: 480, startMin: 480, endMin: 960, durationMin: 480, travelTo: 40, travelFrom: 50, travelMode: "onibus", ...o,
+});
+const MON = "2026-11-09"; // segunda
+const ov = (o: Partial<RoutineOverride> = {}): RoutineOverride => ({ id: "ov1", blockId: "r", date: MON, startActual: null, skipTravel: false, canceled: false, ...o });
+const spans = (occs: ReturnType<typeof expandRoutine>) => occs.map((x) => `${x.kind}:${x.direction ?? "bloco"}:${Math.floor(x.startMin / 60)}:${String(x.startMin % 60).padStart(2, "0")}-${Math.floor(x.endMin / 60)}:${String(x.endMin % 60).padStart(2, "0")}`);
 
 const ev = (o: Partial<EventRow>): EventRow => ({
   id: "e1", title: "Aula", date: "2026-11-02", startMin: 600, durationMin: 60, location: null, category: "estudo",
@@ -32,8 +44,60 @@ describe("expandEvents", () => {
 
 describe("expandRoutine", () => {
   it("só nos dias da semana marcados", () => {
-    const o = expandRoutine([{ id: "r", title: "Trabalho", weekdays: [1, 2, 3, 4, 5], startMin: 540, endMin: 1080, category: "trabalho" }], "2026-11-07", "2026-11-10");
+    const o = expandRoutine([fixedBlock()], "2026-11-07", "2026-11-10");
     expect(o.map((x) => x.date)).toEqual(["2026-11-09", "2026-11-10"]); // sáb e dom ficam de fora
+  });
+});
+
+describe("rotina flexível e deslocamento (10.2)", () => {
+  it("exemplo do doc: início 09:00, 8 h, ida 40 min, volta 50 min -> deslocamentos 08:20–09:00 e 17:00–17:50", () => {
+    const o = expandRoutine([flexBlock()], MON, MON, [ov({ startActual: 540 })]);
+    expect(spans(o)).toEqual(["routine:bloco:9:00-17:00", "travel:ida:8:20-9:00", "travel:volta:17:00-17:50"]);
+    expect(o[0].confirmed).toBe(true);
+  });
+  it("até confirmar o horário real, vale o preferido (e o deslocamento acompanha)", () => {
+    const o = expandRoutine([flexBlock({ preferredStart: 510 })], MON, MON);
+    expect(spans(o)).toEqual(["routine:bloco:8:30-16:30", "travel:ida:7:50-8:30", "travel:volta:16:30-17:20"]);
+    expect(o[0].confirmed).toBe(false);
+    expect(o[0].window).toEqual({ earliest: 480, latest: 600 });
+  });
+  it("confirmar o horário recalcula o tempo livre (o deslocamento não conta como livre)", () => {
+    const free = (start: number | null) => {
+      const occs = expandRoutine([flexBlock()], MON, MON, start === null ? [] : [ov({ startActual: start })]);
+      return freeSlots(busyIntervals(occs), 7 * 60, 23 * 60);
+    };
+    // preferido 08:00: ocupado 07:20–16:00 + volta até 16:50
+    expect(free(null)).toEqual([{ startMin: 1010, endMin: 1380 }]);
+    // real 09:00: livre 07:00–08:20 (80 min) e 17:50–23:00
+    expect(free(540)).toEqual([{ startMin: 420, endMin: 500 }, { startMin: 1070, endMin: 1380 }]);
+  });
+  it("bloco fixo também ganha deslocamento; sem tempo de ida/volta não cria nada", () => {
+    expect(spans(expandRoutine([fixedBlock({ travelTo: 30, travelFrom: 20 })], MON, MON))).toEqual(["routine:bloco:9:00-18:00", "travel:ida:8:30-9:00", "travel:volta:18:00-18:20"]);
+    expect(spans(expandRoutine([fixedBlock()], MON, MON))).toEqual(["routine:bloco:9:00-18:00"]);
+  });
+  it("só vale nos dias da semana do bloco", () => {
+    expect(expandRoutine([flexBlock()], "2026-11-14", "2026-11-15")).toEqual([]); // sáb e dom
+  });
+  it("exceção 'sem deslocamento' (home office) mantém o bloco e tira só o deslocamento", () => {
+    expect(spans(expandRoutine([flexBlock()], MON, MON, [ov({ skipTravel: true })]))).toEqual(["routine:bloco:8:00-16:00"]);
+  });
+  it("bloco cancelado no dia aparece como cancelado, sem deslocamento e sem ocupar tempo", () => {
+    const o = expandRoutine([flexBlock()], MON, MON, [ov({ canceled: true })]);
+    expect(o).toHaveLength(1);
+    expect(o[0].canceled).toBe(true);
+    expect(busyIntervals(o)).toEqual([]);
+  });
+  it("a exceção vale só no dia dela", () => {
+    const o = expandRoutine([flexBlock()], MON, "2026-11-10", [ov({ startActual: 600 })]);
+    expect(o.filter((x) => x.kind === "routine").map((x) => x.startMin)).toEqual([600, 480]);
+  });
+  it("bloco fixo ignora horário real (só o flexível pode mudar)", () => {
+    expect(expandRoutine([fixedBlock()], MON, MON, [ov({ startActual: 600 })])[0].startMin).toBe(540);
+  });
+  it("deslocamento não passa de 00:00 nem de 24:00", () => {
+    const o = expandRoutine([fixedBlock({ startMin: 30, endMin: 1430, travelTo: 60, travelFrom: 60 })], MON, MON);
+    expect(o.find((x) => x.direction === "ida")).toMatchObject({ startMin: 0, endMin: 30 });
+    expect(o.find((x) => x.direction === "volta")).toMatchObject({ startMin: 1430, endMin: 1440 });
   });
 });
 

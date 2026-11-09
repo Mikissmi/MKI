@@ -54,8 +54,35 @@ export function buildLightPlan(ctx: PlanContext): PlanBlock[] {
   return out;
 }
 
+/**
+ * Sugestões para o trajeto (deslocamento): ouvir um podcast da lista ou ler (livro da fila ou artigo curto).
+ * Ficam dentro do próprio trecho de deslocamento, que não conta como tempo livre; só para blocos que pediram isso.
+ */
+export function buildTravelSuggestions(ctx: PlanContext): PlanBlock[] {
+  const excluded = new Set(ctx.exclude ?? []);
+  const pods = ctx.podcasts.filter((p) => !excluded.has(p.id));
+  const books = ctx.readingQueue.filter((r) => !excluded.has(r.id));
+  const articles = ctx.shortArticles.filter((a) => !excluded.has(a.id));
+  const out: PlanBlock[] = [];
+  for (const slot of ctx.travelSlots) {
+    const from = Math.max(slot.startMin, ctx.nowMin ?? slot.startMin);
+    const length = slot.endMin - from;
+    if (length < 15) continue; // trajeto curto ou já passou
+    const base = { startMin: from, durationMin: Math.min(length, 90), reason: "Aproveita o deslocamento" };
+    // um item por trecho: consome só o que foi usado (podcast, depois livro, depois artigo curto)
+    if (pods.length) { const pod = pods.shift()!; out.push({ ...base, kind: "podcast", title: `Ouvir no trajeto: ${pod.title}`, screen: "com_tela", refType: "audio_item", refId: pod.id }); }
+    else if (books.length) { const book = books.shift()!; out.push({ ...base, kind: "leitura", title: `Ler no trajeto: ${book.title}`, screen: "sem_tela", refType: "reading_item", refId: book.id }); }
+    else if (articles.length) { const art = articles.shift()!; out.push({ ...base, kind: "artigo", title: `Ler no trajeto: ${art.title}`, screen: "com_tela", refType: "reading_item", refId: art.id }); }
+  }
+  return out;
+}
+
 export function buildRulesPlan(ctx: PlanContext): PlanBlock[] {
   if (ctx.lightDay) return buildLightPlan(ctx);
+  return [...buildMainPlan(ctx), ...buildTravelSuggestions(ctx)];
+}
+
+function buildMainPlan(ctx: PlanContext): PlanBlock[] {
 
   const excluded = new Set(ctx.exclude ?? []);
   const level = ctx.energy ?? 3;
