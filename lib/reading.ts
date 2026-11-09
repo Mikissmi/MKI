@@ -32,9 +32,9 @@ export function readingFields(kind: "livro" | "artigo" | "obra"): Field[] {
 export type ReadingRow = {
   id: string; kind: "livro" | "artigo" | "obra"; title: string; author: string | null; status: string; serial_status: string | null; current_page: number | null; total_pages: number | null;
   last_chapter: string | null; url: string | null; cover_url: string | null; rating: number | null; review: string | null; tags: string[]; minutes_hint: number | null;
-  started_on: string | null; finished_on: string | null; source: string;
+  started_on: string | null; finished_on: string | null; source: string; summary: string | null;
 };
-export const READING_COLS = "id, kind, title, author, status, serial_status, current_page, total_pages, last_chapter, url, cover_url, rating, review, tags, minutes_hint, started_on::text AS started_on, finished_on::text AS finished_on, source";
+export const READING_COLS = "id, kind, title, author, status, serial_status, current_page, total_pages, last_chapter, url, cover_url, rating, review, tags, minutes_hint, started_on::text AS started_on, finished_on::text AS finished_on, source, summary";
 
 export const readingValues = (r: ReadingRow) => ({
   id: r.id, title: r.title, author: r.author, status: r.status, serial_status: r.serial_status ?? "", current_page: r.current_page, total_pages: r.total_pages, last_chapter: r.last_chapter,

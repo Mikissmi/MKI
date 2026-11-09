@@ -37,7 +37,13 @@ export async function saveReading(_p: FormState, f: FormData): Promise<FormState
   const status = String(f.get("status") ?? "");
   if (status === "lido" && !data.get("finished_on")) data.set("finished_on", today);
   if (status === "lendo" && !data.get("started_on")) data.set("started_on", today);
-  return saveRecord(reading, data, user.id);
+  try {
+    return await saveRecord(reading, data, user.id);
+  } catch (e) {
+    // índice único: um artigo por link
+    if ((e as { code?: string }).code === "23505") return { error: "Este link já está salvo em Leituras.", fieldErrors: { url: "Este link já está salvo" } };
+    throw e;
+  }
 }
 export async function deleteReading(f: FormData) { const u = await requireUser(); await removeRecord("reading_items", f.get("id"), u.id); }
 export async function saveNote(_p: FormState, f: FormData) { const u = await requireUser(); return saveRecord(note, f, u.id); }

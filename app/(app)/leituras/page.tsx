@@ -10,6 +10,7 @@ import { TabLinks } from "@/components/ui/TabLinks";
 import { Panel, Pill, ProgressBar } from "@/components/ui/Panel";
 import { Cover, Stars } from "@/components/ui/Cover";
 import { AddSheet, FormSheet } from "@/components/forms/FormSheet";
+import { fmtDateKey } from "@/lib/format";
 import { domainOf, progressPct, READING_COLS, readingFields, readingValues, SERIAL_STATUS, type ReadingRow } from "@/lib/reading";
 import { deleteReading, logReading, saveReading, setReadingStatus } from "./actions";
 
@@ -110,7 +111,8 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
                     {a.cover_url && <Cover url={a.cover_url} width={52} height={52} radius={10} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <a href={a.url ?? "#"} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "none" }}><Text size="sm" fw={800} lh={1.25}>{a.title}</Text></a>
-                      <Text size="xs" c="dimmed">{domainOf(a.url)}{a.minutes_hint ? ` · ${a.minutes_hint} min` : ""}{a.source === "noticia" ? " · de Notícias" : ""}</Text>
+                      <Text size="xs" c="dimmed">{a.author ? `${a.author} · ` : ""}{domainOf(a.url)}{a.minutes_hint ? ` · ${a.minutes_hint} min` : ""}{a.source === "noticia" ? " · de Notícias" : ""}</Text>
+                      {a.summary && <Text size="xs" mt={2} lineClamp={2}>{a.summary}</Text>}
                       {a.tags.length > 0 && <Group gap={4} mt={4}>{a.tags.map((t) => <Pill key={t} tone="lavender">{t}</Pill>)}</Group>}
                     </div>
                   </Group>
@@ -124,7 +126,7 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
             </Stack>
           </Panel>
           {(by("lido").length > 0 || by("arquivado").length > 0) && (
-            <Panel tone="sage" title="Lidos e arquivados" icon="check"><Stack gap={6}>{[...by("lido"), ...by("arquivado")].map((a) => edit(a, <Group justify="space-between" wrap="nowrap"><Text size="sm" truncate>{a.title}</Text><Pill tone="sage">{a.status === "lido" ? "lido" : "arquivado"}</Pill></Group>))}</Stack></Panel>
+            <Panel tone="sage" title="Lidos e arquivados" icon="check"><Stack gap={6}>{[...by("lido"), ...by("arquivado")].map((a) => edit(a, <div><Group justify="space-between" wrap="nowrap"><Text size="sm" fw={600} truncate>{a.title}</Text><Pill tone="sage" icon={a.status === "lido" ? "check" : undefined}>{a.status === "lido" ? "lido" : "arquivado"}</Pill></Group>{(a.author || a.finished_on) && <Text size="xs" c="dimmed">{[a.author, a.finished_on ? `lido em ${fmtDateKey(a.finished_on)}` : null].filter(Boolean).join(" · ")}</Text>}{a.summary && <Text size="xs" lineClamp={2}>{a.summary}</Text>}</div>))}</Stack></Panel>
           )}
         </>)}
 

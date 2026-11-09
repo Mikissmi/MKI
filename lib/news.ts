@@ -50,9 +50,9 @@ async function storeItems(userId: string, feed: FeedRow, parsed: ParsedFeed) {
   for (const it of parsed.items.slice(0, 40)) {
     const topic = feed.topic_id ?? matchTopic(`${it.title} ${it.summary ?? ""}`, topics);
     await query(
-      `INSERT INTO news_items (user_id, feed_id, topic_id, guid, title, link, summary, image_url, published_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (feed_id, guid) DO NOTHING`,
-      [userId, feed.id, topic, it.guid, it.title, it.link, it.summary, it.imageUrl, it.publishedAt?.toISOString() ?? null],
+      `INSERT INTO news_items (user_id, feed_id, topic_id, guid, title, link, summary, summary_source, image_url, published_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (feed_id, guid) DO NOTHING`,
+      [userId, feed.id, topic, it.guid, it.title, it.link, it.summary, it.summary ? "feed" : null, it.imageUrl, it.publishedAt?.toISOString() ?? null],
     );
   }
   await query(

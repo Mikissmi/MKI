@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Box, Button, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { query, queryOne } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
@@ -119,7 +120,7 @@ export default async function TodayPage() {
 
         {headlines.length > 0 && (
           <Panel tone="plain" title="Notícias em destaque" icon="news" action={<LinkButton href="/noticias" size="compact-xs" variant="subtle">Ver todas</LinkButton>}>
-            <Stack gap={8}>{headlines.map((h) => (<div key={h.id}><Text size="xs" c="dimmed">{h.feed_title}</Text><Text size="sm" fw={700} lh={1.25}>{h.title}</Text></div>))}</Stack>
+            <Stack gap={8}>{headlines.map((h) => (<Link key={h.id} href={`/noticias/${h.id}`} style={{ textDecoration: "none", color: "inherit" }}><Text size="xs" c="dimmed">{h.feed_title}</Text><Text size="sm" fw={700} lh={1.25}>{h.title}</Text></Link>))}</Stack>
           </Panel>
         )}
 

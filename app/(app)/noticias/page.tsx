@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { after } from "next/server";
 import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { query } from "@/lib/db";
@@ -85,7 +86,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               <Group wrap="nowrap" align="flex-start" gap="sm">
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Group gap={6}><Text size="xs" fw={800} c="inherit">{n.feed_title}</Text><Text size="xs" c="inherit" style={{ opacity: 0.9 }}>{ago(n.published_at)}</Text></Group>
-                  <a href={n.link} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "none" }}><Text fw={800} lh={1.25} mt={2}>{n.title}</Text></a>
+                  <Link href={`/noticias/${n.id}`} style={{ color: "inherit", textDecoration: "none" }}><Text fw={800} lh={1.25} mt={2}>{n.title}</Text></Link>
                   {n.summary && <Text size="sm" mt={4} lineClamp={3} style={{ opacity: 0.85 }}>{n.summary}</Text>}
                 </div>
                 {n.image_url && <Cover url={n.image_url} width={84} height={84} radius={16} />}
