@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SimpleGrid, Text } from "@mantine/core";
 import { categoryColor } from "@/lib/agenda/categories";
 import type { Occurrence } from "@/lib/agenda/occurrences";
-import { addDays, dayOfMonth, startOfMonth, startOfWeek } from "@/lib/time";
+import { addDays, dayOfMonth, formatDateLong, startOfMonth, startOfWeek } from "@/lib/time";
 
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 
@@ -29,7 +29,7 @@ export function MonthView({ month, occurrences, today }: { month: string; occurr
             <Link
               key={d}
               href={`/agenda?v=dia&d=${d}`}
-              aria-label={`${d}${evs.length ? `, ${evs.length} evento(s)` : ""}`}
+              aria-label={`${dayOfMonth(d)}, ${formatDateLong(d)}${evs.length ? `, ${evs.length} evento(s)` : ""}`}
               style={{
                 textDecoration: "none", color: "inherit", minHeight: 52, padding: 4, textAlign: "center",
                 borderRadius: "var(--mantine-radius-md)", opacity: inMonth ? 1 : 0.35,

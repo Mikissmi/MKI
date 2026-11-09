@@ -43,3 +43,16 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Contraste (WCAG AA): o cinza padrão do Mantine é claro demais sobre o creme */
+:root[data-mantine-color-scheme="light"] {
+  --mantine-color-dimmed: #6a5a62;
+  --input-placeholder-color: #6a5a62;
+}
+
+:root[data-mantine-color-scheme="light"] .mantine-InputPlaceholder-placeholder,
+:root[data-mantine-color-scheme="light"] input::placeholder,
+:root[data-mantine-color-scheme="light"] textarea::placeholder {
+  color: #6a5a62;
+  opacity: 1;
+}

@@ -92,7 +92,7 @@ export default async function TodayPage() {
         <Panel
           tone="plain" title="Plano do dia" icon="calendar"
           action={<Group gap={6}>
-            {!ctx.lightDay && <form action={toggleLightDay}><Button type="submit" size="compact-xs" variant="light" color="lavender.7" leftSection={<Icon name="leaf" size={12} />}>Dia leve</Button></form>}
+            {!ctx.lightDay && <form action={toggleLightDay}><Button type="submit" size="compact-xs" variant="light" color="lavender" leftSection={<Icon name="leaf" size={12} />}>Dia leve</Button></form>}
             <LinkButton href="/agenda/evento/novo" size="compact-xs" variant="light">Evento</LinkButton>
           </Group>}
         >

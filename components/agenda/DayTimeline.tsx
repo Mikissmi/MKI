@@ -28,7 +28,7 @@ export function DayTimeline({ occurrences, freeSlots, nowMin, emptyText }: {
         if (it.type === "free") {
           const { startMin, endMin } = it.slot;
           return (
-            <Box key={`f${startMin}`} px="sm" py={8} style={{ border: "2px dashed var(--mantine-color-sage-4)", borderRadius: 18, opacity: nowMin !== undefined && endMin <= nowMin ? 0.45 : 1 }}>
+            <Box key={`f${startMin}`} px="sm" py={8} style={{ border: "2px dashed var(--mantine-color-sage-4)", borderRadius: 18,  }}>
               <Group justify="space-between" wrap="nowrap">
                 <Group gap={8}><IconTile icon="clock" tone="sage" size={26} round /><Text size="sm" c="sage.8" fw={700}>Horário livre</Text></Group>
                 <Text size="xs" c="dimmed">{fmtMin(startMin)}–{fmtMin(endMin)} · {fmtDuration(endMin - startMin)}</Text>
@@ -41,12 +41,12 @@ export function DayTimeline({ occurrences, freeSlots, nowMin, emptyText }: {
         const t = TONES[tone];
         const past = nowMin !== undefined && o.endMin <= nowMin;
         const card = (
-          <Group wrap="nowrap" p="xs" pr="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 20, color: t.fg, opacity: past ? 0.5 : 1 }}>
-            <IconTile icon={CATEGORY_ICON[o.category] ?? "calendar"} tone={tone} size={42} round />
+          <Group wrap="nowrap" p="xs" pr="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 20, color: t.fg }}>
+            <div style={{ opacity: past ? 0.45 : 1 }}><IconTile icon={CATEGORY_ICON[o.category] ?? "calendar"} tone={tone} size={42} round /></div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <Text fw={800} size="sm" c="inherit" lh={1.25}>{fmtMin(o.startMin)}</Text>
               <Text fw={600} size="sm" c="inherit" truncate>{o.title}</Text>
-              {o.location && <Text size="xs" c="inherit" style={{ opacity: 0.75 }} truncate>{o.location}</Text>}
+              {o.location && <Text size="xs" c="inherit" style={{ opacity: 0.9 }} truncate>{o.location}</Text>}
             </div>
             <Pill tone={tone}>{o.kind === "routine" ? "rotina" : categoryLabel(o.category)}</Pill>
           </Group>

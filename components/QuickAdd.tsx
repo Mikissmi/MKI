@@ -103,7 +103,7 @@ export function QuickAdd({ categories, habits }: { categories: { id: string; nam
               <Button loading={busy} disabled={!url.trim()} onClick={() => run({ type: "link", url: url.trim() }, "Link salvo em Leituras")}>Salvar para ler depois</Button>
             </>)}
             {error && <Text size="sm" c="red" role="alert">{error}</Text>}
-            <Button variant="subtle" color="gray" onClick={() => { setMode(null); setError(null); }}>Voltar</Button>
+            <Button variant="subtle" color="dark" onClick={() => { setMode(null); setError(null); }}>Voltar</Button>
           </Stack>
         )}
       </Drawer>

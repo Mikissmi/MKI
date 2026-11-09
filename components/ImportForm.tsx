@@ -12,7 +12,7 @@ export function ImportForm() {
     <ActionForm action={action}>
       <Stack gap="xs">
         <Text size="sm" fw={700}>Restaurar backup (JSON)</Text>
-        <FileInput name="file" accept="application/json,.json" placeholder="Escolher arquivo de backup" aria-label="Arquivo de backup" clearable />
+        <FileInput name="file" accept="application/json,.json" placeholder="Escolher arquivo de backup" aria-label="Escolher arquivo de backup" clearable />
         <Text size="xs" c="dimmed">Soma ao que você já tem; registros repetidos são ignorados.</Text>
         {state && (state.ok
           ? <Alert color="green" variant="light">{state.inserted} registros importados{state.skipped ? `, ${state.skipped} já existiam ou foram ignorados` : ""}.</Alert>

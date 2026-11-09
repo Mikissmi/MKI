@@ -34,22 +34,22 @@ export default async function ReadingDetail({ params }: { params: Promise<{ id: 
             <Cover url={item.cover_url} icon="book" width={96} height={132} />
             <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
               <Text fw={800} fz={20} lh={1.2}>{item.title}</Text>
-              {item.author && <Text size="sm" style={{ opacity: 0.8 }}>{item.author}</Text>}
+              {item.author && <Text size="sm" style={{ opacity: 0.9 }}>{item.author}</Text>}
               <Group gap={6}><Pill tone="lavender">{item.status}</Pill><Stars value={item.rating} /></Group>
               {item.total_pages && (<><Text size="xs">Página {item.current_page ?? 0} de {item.total_pages} ({progressPct(item)}%)</Text><ProgressBar value={progressPct(item)} /></>)}
-              {item.started_on && <Text size="xs" style={{ opacity: 0.8 }}>Começou em {fmtDateKey(item.started_on)}{item.finished_on ? ` · terminou em ${fmtDateKey(item.finished_on)}` : ""}</Text>}
+              {item.started_on && <Text size="xs" style={{ opacity: 0.9 }}>Começou em {fmtDateKey(item.started_on)}{item.finished_on ? ` · terminou em ${fmtDateKey(item.finished_on)}` : ""}</Text>}
             </Stack>
           </Group>
           <Group gap={6} mt="sm">
             {item.kind === "livro" && <FormSheet title="Registrar leitura" fields={[{ name: "pages", label: "Páginas lidas", type: "decimal", required: true }, { name: "minutes", label: "Tempo (minutos, opcional)", type: "decimal" }]} hidden={{ item_id: item.id }} action={logReading} submitLabel="Registrar" block={false}><Button component="span" size="compact-sm" leftSection="+">Registrar leitura</Button></FormSheet>}
-            <FormSheet title="Editar" fields={readingFields(item.kind)} values={readingValues(item)} hidden={{ kind: item.kind }} action={saveReading} remove={deleteReading} block={false}><Button component="span" size="compact-sm" variant="white" color="gray">Editar</Button></FormSheet>
+            <FormSheet title="Editar" fields={readingFields(item.kind)} values={readingValues(item)} hidden={{ kind: item.kind }} action={saveReading} remove={deleteReading} block={false}><Button component="span" size="compact-sm" variant="white" color="dark">Editar</Button></FormSheet>
           </Group>
           {item.review && <Text size="sm" mt="sm" style={{ whiteSpace: "pre-wrap" }}>{item.review}</Text>}
         </Panel>
 
         <Panel tone="lavender" title="Trechos e anotações" icon="notes" action={<AddSheet title="Nova anotação" fields={noteFields} hidden={{ item_id: item.id }} action={saveNote} />}>
           <Stack gap="xs">
-            {notes.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Guarde citações e destaques desta leitura.</Text>}
+            {notes.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Guarde citações e destaques desta leitura.</Text>}
             {notes.map((n) => (
               <FormSheet key={n.id} title="Editar anotação" fields={noteFields} values={{ id: n.id, quote: n.quote, note: n.note, page: n.page }} hidden={{ item_id: item.id }} action={saveNote} remove={deleteNote}>
                 <Box p="xs" style={{ background: "rgba(255,255,255,0.6)", borderRadius: 14 }}>

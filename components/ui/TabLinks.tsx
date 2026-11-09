@@ -14,9 +14,9 @@ export function TabLinks({ items, active, small = false }: { items: { key: strin
             style={{
               flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, textAlign: "center", textDecoration: "none", borderRadius: 999, minHeight: small ? 34 : 40, padding: "4px 8px",
               fontWeight: 700, fontSize: small ? 12 : 13, lineHeight: 1.15,
-              background: on ? "var(--mantine-color-lotus-5)" : "light-dark(#fffdf8, var(--mantine-color-dark-6))",
+              background: on ? "var(--mantine-color-lotus-6)" : "light-dark(#fffdf8, var(--mantine-color-dark-6))",
               color: on ? "#fff" : "light-dark(#8a5a63, var(--mantine-color-gray-4))",
-              border: `1px solid ${on ? "var(--mantine-color-lotus-5)" : "light-dark(#f3dfd5, var(--mantine-color-dark-4))"}`,
+              border: `1px solid ${on ? "var(--mantine-color-lotus-6)" : "light-dark(#f3dfd5, var(--mantine-color-dark-4))"}`,
               boxShadow: on ? "0 2px 8px rgba(232,93,151,0.3)" : undefined,
             }}
           >

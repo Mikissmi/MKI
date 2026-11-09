@@ -57,18 +57,18 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           </Group>
           {t.notes && <Text size="sm" mt="sm" style={{ whiteSpace: "pre-wrap" }}>{t.notes}</Text>}
           <Group gap={6} mt="sm">
-            <FormSheet title="Editar viagem" fields={tripFields} values={{ id: t.id, name: t.name, status: t.status, start_on: t.start_on, end_on: t.end_on, estimated_cost_cents: moneyInput(t.estimated_cost_cents), link: t.link, cover_url: t.cover_url, notes: t.notes }} action={saveTrip} remove={deleteTrip} block={false}><Button component="span" size="compact-sm" variant="white" color="gray">Editar</Button></FormSheet>
-            {t.link && <Button component="a" href={t.link} target="_blank" rel="noopener noreferrer" size="compact-sm" variant="white" color="gray" rightSection={<Icon name="external" size={12} />}>Link</Button>}
+            <FormSheet title="Editar viagem" fields={tripFields} values={{ id: t.id, name: t.name, status: t.status, start_on: t.start_on, end_on: t.end_on, estimated_cost_cents: moneyInput(t.estimated_cost_cents), link: t.link, cover_url: t.cover_url, notes: t.notes }} action={saveTrip} remove={deleteTrip} block={false}><Button component="span" size="compact-sm" variant="white" color="dark">Editar</Button></FormSheet>
+            {t.link && <Button component="a" href={t.link} target="_blank" rel="noopener noreferrer" size="compact-sm" variant="white" color="dark" rightSection={<Icon name="external" size={12} />}>Link</Button>}
           </Group>
-          <Text size="xs" mt={6} style={{ opacity: 0.7 }}>Excluir a viagem também exclui os gastos dela.</Text>
+          <Text size="xs" mt={6} style={{ opacity: 0.9 }}>Excluir a viagem também exclui os gastos dela.</Text>
         </Panel>
 
         <Panel tone="lavender" title="Roteiro" icon="compass" action={<AddSheet title="Novo dia" fields={dayFields} values={{ day_number: String(days.length + 1) }} hidden={hid} action={saveDay} />}>
           <Stack gap={8}>
-            {days.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Monte o roteiro dia a dia.</Text>}
+            {days.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Monte o roteiro dia a dia.</Text>}
             {days.map((d) => (
               <FormSheet key={d.id} title={`Dia ${d.day_number}`} fields={dayFields} values={{ id: d.id, day_number: d.day_number, title: d.title, notes: d.notes }} hidden={hid} action={saveDay} remove={deleteDay}>
-                <Group gap={10} wrap="nowrap" align="flex-start"><Box style={{ width: 12, height: 12, borderRadius: 6, background: "var(--mantine-color-lotus-5)", marginTop: 5, flexShrink: 0 }} /><div><Text size="sm" fw={700}>Dia {d.day_number} · {d.title}</Text>{d.notes && <Text size="xs" style={{ opacity: 0.75 }}>{d.notes}</Text>}</div></Group>
+                <Group gap={10} wrap="nowrap" align="flex-start"><Box style={{ width: 12, height: 12, borderRadius: 6, background: "var(--mantine-color-lotus-5)", marginTop: 5, flexShrink: 0 }} /><div><Text size="sm" fw={700}>Dia {d.day_number} · {d.title}</Text>{d.notes && <Text size="xs" style={{ opacity: 0.9 }}>{d.notes}</Text>}</div></Group>
               </FormSheet>
             ))}
           </Stack>
@@ -83,7 +83,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
                   <button type="submit" aria-pressed={p.checked} style={{ display: "flex", gap: 10, alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit", textAlign: "left" }}>
                     <span style={{ width: 22, height: 22, borderRadius: 7, border: "2px solid var(--mantine-color-sage-6)", background: p.checked ? "var(--mantine-color-sage-6)" : "transparent", display: "grid", placeItems: "center", color: "#fff", flexShrink: 0 }}>{p.checked && <Icon name="check" size={14} stroke={3} />}</span>
                     <Text size="sm" td={p.checked ? "line-through" : undefined}>{p.title}</Text></button></form>
-                <form action={deletePackingItem}><input type="hidden" name="id" value={p.id} /><Button type="submit" size="compact-xs" variant="subtle" color="gray" aria-label={`Remover ${p.title}`}><Icon name="x" size={14} /></Button></form>
+                <form action={deletePackingItem}><input type="hidden" name="id" value={p.id} /><Button type="submit" size="compact-xs" variant="subtle" color="dark" aria-label={`Remover ${p.title}`}><Icon name="x" size={14} /></Button></form>
               </Group>
             ))}
             {pack.length > 0 && <form action={copyPackingTemplate}><input type="hidden" name="trip_id" value={t.id} /><Button type="submit" size="compact-xs" variant="subtle" color="sage.8">Adicionar itens do modelo que faltam</Button></form>}
@@ -91,12 +91,12 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
         </Panel>
 
         <Panel tone="sun" title={`Gastos da viagem · ${brl(spent)}`} icon="wallet" action={<AddSheet title="Novo gasto da viagem" fields={expFields} values={{ date: today, category_id: "" }} hidden={hid} action={saveTripExpense} />}>
-          <Text size="xs" mb="xs" style={{ opacity: 0.8 }}>Ficam separados dos gastos do dia a dia em Finanças.</Text>
+          <Text size="xs" mb="xs" style={{ opacity: 0.9 }}>Ficam separados dos gastos do dia a dia em Finanças.</Text>
           <Stack gap={8}>
-            {expenses.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Nenhum gasto registrado.</Text>}
+            {expenses.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Nenhum gasto registrado.</Text>}
             {expenses.map((e) => (
               <FormSheet key={e.id} title="Editar gasto" fields={expFields} values={{ id: e.id, amount_cents: moneyInput(e.amount_cents), date: e.date, category_id: e.category_id ?? "", note: e.note }} hidden={hid} action={saveTripExpense} remove={deleteTripExpense}>
-                <Group justify="space-between" wrap="nowrap"><div><Text size="sm" fw={700}>{e.note || "Gasto"}</Text><Text size="xs" style={{ opacity: 0.75 }}>{fmtDateKey(e.date)}</Text></div><Text size="sm" fw={800}>{brl(e.amount_cents)}</Text></Group>
+                <Group justify="space-between" wrap="nowrap"><div><Text size="sm" fw={700}>{e.note || "Gasto"}</Text><Text size="xs" style={{ opacity: 0.9 }}>{fmtDateKey(e.date)}</Text></div><Text size="sm" fw={800}>{brl(e.amount_cents)}</Text></Group>
               </FormSheet>
             ))}
           </Stack>

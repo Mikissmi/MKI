@@ -37,7 +37,7 @@ export default async function CreativeProjectPage({ params }: { params: Promise<
               <Group gap={6}><Pill tone="sage">{CREATIVE_KINDS.find((k) => k.value === p.kind)?.label}</Pill></Group>
               {p.description && <Text size="sm">{p.description}</Text>}
               <Text size="xs">{time?.n ?? 0} sessões · {time?.m ?? 0} min no total</Text>
-              <FormSheet title="Editar projeto" fields={projectFields} values={{ id: p.id, title: p.title, kind: p.kind, description: p.description, cover_url: p.cover_url }} action={saveProject} remove={deleteProject} block={false}><Button component="span" size="compact-sm" variant="white" color="gray">Editar</Button></FormSheet>
+              <FormSheet title="Editar projeto" fields={projectFields} values={{ id: p.id, title: p.title, kind: p.kind, description: p.description, cover_url: p.cover_url }} action={saveProject} remove={deleteProject} block={false}><Button component="span" size="compact-sm" variant="white" color="dark">Editar</Button></FormSheet>
             </Stack>
           </Group>
         </Panel>

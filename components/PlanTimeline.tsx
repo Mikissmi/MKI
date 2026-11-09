@@ -30,7 +30,7 @@ export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay 
       {items.map((it) => {
         if (it.free) {
           return (
-            <Box key={`f${it.at}`} px="sm" py={8} style={{ border: "2px dashed var(--mantine-color-sage-4)", borderRadius: 18, opacity: it.free.endMin <= nowMin ? 0.45 : 1 }}>
+            <Box key={`f${it.at}`} px="sm" py={8} style={{ border: "2px dashed var(--mantine-color-sage-4)", borderRadius: 18, }}>
               <Group justify="space-between" wrap="nowrap">
                 <Group gap={8}><IconTile icon="clock" tone="sage" size={26} round /><Text size="sm" c="sage.8" fw={700}>Horário livre</Text></Group>
                 <Text size="xs" c="dimmed">{fmtMin(it.free.startMin)}–{fmtMin(it.free.endMin)} · {fmtDuration(it.free.endMin - it.free.startMin)}</Text>
@@ -52,17 +52,17 @@ export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay 
                     <Pill tone={tone}>{b.status === "proposed" ? "sugestão" : "aceita"}</Pill>
                   </Group>
                   <Text size="sm" fw={600} c="inherit">{b.title}</Text>
-                  {b.reason && <Text size="xs" c="inherit" style={{ opacity: 0.75 }}>{b.reason}</Text>}
+                  {b.reason && <Text size="xs" c="inherit" style={{ opacity: 0.9 }}>{b.reason}</Text>}
                 </div>
               </Group>
               {b.status === "proposed" ? (
                 <Group gap="xs" mt="xs" grow>
                   <form action={acceptBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-sm" fullWidth color="lavender.7">Aceitar</Button></form>
                   <form action={swapBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-sm" fullWidth variant="white" color="lavender.7">Trocar</Button></form>
-                  <form action={dismissBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-sm" fullWidth variant="subtle" color="gray">Dispensar</Button></form>
+                  <form action={dismissBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-sm" fullWidth variant="subtle" color="dark">Dispensar</Button></form>
                 </Group>
               ) : (
-                <form action={removeBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-xs" variant="subtle" color="gray" mt={4}>Remover</Button></form>
+                <form action={removeBlock}><input type="hidden" name="id" value={b.id} /><Button type="submit" size="compact-xs" variant="subtle" color="dark" mt={4}>Remover</Button></form>
               )}
             </Box>
           );
@@ -72,14 +72,14 @@ export function PlanTimeline({ occurrences, blocks, freeSlots, nowMin, lightDay 
         const t = TONES[tone];
         const past = o.endMin <= nowMin;
         const card = (
-          <Group wrap="nowrap" p="xs" pr="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 20, color: t.fg, opacity: past ? 0.5 : 1 }}>
-            <IconTile icon={CATEGORY_ICON[o.category] ?? "calendar"} tone={tone} size={42} round />
+          <Group wrap="nowrap" p="xs" pr="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 20, color: t.fg }}>
+            <div style={{ opacity: past ? 0.45 : 1 }}><IconTile icon={CATEGORY_ICON[o.category] ?? "calendar"} tone={tone} size={42} round /></div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <Text fw={800} size="sm" c="inherit" lh={1.25}>{fmtMin(o.startMin)}</Text>
               <Text fw={600} size="sm" c="inherit" truncate>{o.title}</Text>
-              {o.location && <Text size="xs" c="inherit" style={{ opacity: 0.75 }} truncate>{o.location}</Text>}
+              {o.location && <Text size="xs" c="inherit" style={{ opacity: 0.9 }} truncate>{o.location}</Text>}
             </div>
-            <Pill tone={tone}>{o.kind === "routine" ? "rotina" : categoryLabel(o.category)}</Pill>
+            <Pill tone={tone}>{past ? "passou" : o.kind === "routine" ? "rotina" : categoryLabel(o.category)}</Pill>
           </Group>
         );
         return o.kind === "event" ? <Link key={o.key} href={`/agenda/evento/${o.id}`} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link> : <div key={o.key}>{card}</div>;

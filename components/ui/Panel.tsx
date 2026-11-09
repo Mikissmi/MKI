@@ -50,16 +50,16 @@ export function StatTile({ tone, icon, label, value }: { tone: Tone; icon: strin
   return (
     <Panel tone={tone} p="sm" style={{ borderRadius: 20 }}>
       <IconTile icon={icon} tone={tone} size={34} round />
-      <Text size="xs" mt={6} style={{ opacity: 0.8 }}>{label}</Text>
+      <Text size="xs" mt={6} style={{ opacity: 0.9 }}>{label}</Text>
       <Text fw={800} size="md" lh={1.2}>{value}</Text>
     </Panel>
   );
 }
 
-export function ProgressBar({ value, tone = "pink", height = 10 }: { value: number; tone?: Tone; height?: number }) {
+export function ProgressBar({ value, tone = "pink", height = 10, label = "Progresso" }: { value: number; tone?: Tone; height?: number; label?: string }) {
   const t = TONES[tone];
   return (
-    <Box style={{ background: t.tile, borderRadius: 999, height, overflow: "hidden" }} role="progressbar" aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
+    <Box style={{ background: t.tile, borderRadius: 999, height, overflow: "hidden" }} role="progressbar" aria-label={label} aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
       <Box style={{ width: `${Math.max(0, Math.min(100, value))}%`, height: "100%", background: t.accent, borderRadius: 999 }} />
     </Box>
   );

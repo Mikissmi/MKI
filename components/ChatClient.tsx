@@ -66,7 +66,7 @@ export function ChatClient({ initial }: { initial: ChatMsg[] }) {
                   <Button size="compact-md" disabled={accepted.has(m.id)} onClick={() => startTransition(async () => { await acceptAllBlocks(); setAccepted((s) => new Set(s).add(m.id)); router.refresh(); })}>
                     {accepted.has(m.id) ? "Plano aceito" : "Aceitar plano"}
                   </Button>
-                  <Button size="compact-md" variant="light" color="sage.7" onClick={() => { setText("Ajusta: "); input.current?.focus(); }}>Ajustar</Button>
+                  <Button size="compact-md" variant="light" color="sage" onClick={() => { setText("Ajusta: "); input.current?.focus(); }}>Ajustar</Button>
                 </Group>
               </Stack>
             )}

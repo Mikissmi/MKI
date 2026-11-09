@@ -54,7 +54,7 @@ export function CreativeTimer({ projects }: { projects: { id: string; title: str
       </>) : (
         <Group gap="xs" grow w="100%">
           <Button onClick={finish} loading={busy} color={finished ? "lotus" : "sage.7"}>{finished ? "Salvar sessão" : "Encerrar e salvar"}</Button>
-          <Button onClick={discard} variant="white" color="gray">Descartar</Button>
+          <Button onClick={discard} variant="white" color="dark">Descartar</Button>
         </Group>
       )}
     </Stack>

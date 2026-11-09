@@ -81,10 +81,10 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           const tone = n.tone ?? FALLBACK[i % FALLBACK.length];
           const t = TONES[tone];
           return (
-            <Box key={n.id} p="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 24, color: t.fg, opacity: n.read ? 0.65 : 1 }}>
+            <Box key={n.id} p="sm" style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 24, color: t.fg }}>
               <Group wrap="nowrap" align="flex-start" gap="sm">
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <Group gap={6}><Text size="xs" fw={800} c="inherit">{n.feed_title}</Text><Text size="xs" c="inherit" style={{ opacity: 0.7 }}>{ago(n.published_at)}</Text></Group>
+                  <Group gap={6}><Text size="xs" fw={800} c="inherit">{n.feed_title}</Text><Text size="xs" c="inherit" style={{ opacity: 0.9 }}>{ago(n.published_at)}</Text></Group>
                   <a href={n.link} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "none" }}><Text fw={800} lh={1.25} mt={2}>{n.title}</Text></a>
                   {n.summary && <Text size="sm" mt={4} lineClamp={3} style={{ opacity: 0.85 }}>{n.summary}</Text>}
                 </div>
@@ -92,9 +92,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               </Group>
               <Group gap={6} mt="xs" justify="space-between" wrap="nowrap">
                 <form action={toggleRead}><input type="hidden" name="id" value={n.id} />
-                  <Button type="submit" size="compact-xs" variant="subtle" color="gray" c="inherit" leftSection={<Icon name={n.read ? "square-check" : "check"} size={14} />}>{n.read ? "Lida" : "Marcar como lida"}</Button></form>
+                  <Button type="submit" size="compact-xs" variant="subtle" color="dark" c="inherit" leftSection={<Icon name={n.read ? "square-check" : "check"} size={14} />}>{n.read ? "Lida" : "Marcar como lida"}</Button></form>
                 <Group gap={4} wrap="nowrap">
-                  <form action={saveForLater}><input type="hidden" name="id" value={n.id} /><Button type="submit" size="compact-xs" variant="white" color="gray" leftSection={<Icon name="book2" size={13} />}>Ler depois</Button></form>
+                  <form action={saveForLater}><input type="hidden" name="id" value={n.id} /><Button type="submit" size="compact-xs" variant="white" color="dark" leftSection={<Icon name="book2" size={13} />}>Ler depois</Button></form>
                   <form action={toggleFavorite}><input type="hidden" name="id" value={n.id} /><Button type="submit" size="compact-xs" variant={n.favorite ? "filled" : "white"} color={n.favorite ? "lotus" : "gray"} aria-label={n.favorite ? "Remover dos favoritos" : "Favoritar"} aria-pressed={n.favorite}><Icon name={n.favorite ? "bookmark-filled" : "bookmark"} size={15} /></Button></form>
                 </Group>
               </Group>
@@ -105,7 +105,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         {items.length > 0 && (
           <Group justify="center" gap="xs">
             <form action={refreshNow}><Button type="submit" size="compact-sm" variant="light" leftSection={<Icon name="refresh" size={14} />}>Atualizar agora</Button></form>
-            <form action={markAllRead}><Button type="submit" size="compact-sm" variant="subtle" color="gray">Marcar tudo como lido</Button></form>
+            <form action={markAllRead}><Button type="submit" size="compact-sm" variant="subtle" color="dark">Marcar tudo como lido</Button></form>
           </Group>
         )}
       </Stack>

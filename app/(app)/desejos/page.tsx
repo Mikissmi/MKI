@@ -74,7 +74,7 @@ export default async function WishlistPage() {
                     <Button component="span" size="compact-xs" color={released ? "sage.7" : "gray"} variant={released ? "filled" : "light"} leftSection={<Icon name={released ? "check" : "lock"} size={12} />}>Comprei</Button>
                   </FormSheet>
                   <form action={markReceived}><input type="hidden" name="id" value={w.id} /><Button type="submit" size="compact-xs" variant="light" color="lotus" leftSection={<Icon name="gift" size={12} />}>Ganhei</Button></form>
-                  {w.url && <Button component="a" href={w.url} target="_blank" rel="noopener noreferrer" size="compact-xs" variant="subtle" color="gray" rightSection={<Icon name="external" size={12} />}>Loja</Button>}
+                  {w.url && <Button component="a" href={w.url} target="_blank" rel="noopener noreferrer" size="compact-xs" variant="subtle" color="dark" rightSection={<Icon name="external" size={12} />}>Loja</Button>}
                 </Group>
               )}
             </Panel>

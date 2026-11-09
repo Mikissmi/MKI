@@ -95,5 +95,7 @@ export function FormSheet({ title, fields, values, action, remove, hidden, submi
 /** Botão pequeno "+" que abre um FormSheet de criação. */
 export function AddSheet(props: Omit<Parameters<typeof FormSheet>[0], "children" | "block"> & { label?: string }) {
   const { label = "Novo", ...rest } = props;
-  return <FormSheet {...rest} block={false} triggerLabel={rest.title}><Button component="span" size="compact-sm" variant="light" leftSection="+">{label}</Button></FormSheet>;
+  // o nome acessível precisa conter o texto visível (WCAG 2.5.3)
+  const name = !label || rest.title.toLowerCase().includes(label.toLowerCase()) ? rest.title : `${label}: ${rest.title}`;
+  return <FormSheet {...rest} block={false} triggerLabel={name}><Button component="span" size="compact-sm" variant="light" leftSection={<span aria-hidden="true">+</span>}>{label}</Button></FormSheet>;
 }

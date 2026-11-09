@@ -51,9 +51,9 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
 
         <LinkButton href="/receitas/semana" size="md" leftSection={<Icon name="calendar" size={18} />}>Planejar semana</LinkButton>
 
-        <Panel tone="sage" title="Lista de compras" icon="cart" action={shopping.some((s) => s.checked) ? <form action={clearChecked}><Button type="submit" size="compact-xs" variant="white" color="gray">Limpar marcados</Button></form> : undefined}>
+        <Panel tone="sage" title="Lista de compras" icon="cart" action={shopping.some((s) => s.checked) ? <form action={clearChecked}><Button type="submit" size="compact-xs" variant="white" color="dark">Limpar marcados</Button></form> : undefined}>
           <Stack gap={8}>
-            {shopping.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Vazia. Adicione itens ou envie os ingredientes de uma receita.</Text>}
+            {shopping.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Vazia. Adicione itens ou envie os ingredientes de uma receita.</Text>}
             {shopping.map((s) => (
               <form key={s.id} action={toggleShopping}><input type="hidden" name="id" value={s.id} />
                 <button type="submit" aria-pressed={s.checked} style={{ display: "flex", gap: 10, alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit", width: "100%", textAlign: "left" }}>

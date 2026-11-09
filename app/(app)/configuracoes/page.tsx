@@ -80,13 +80,13 @@ export default async function SettingsPage() {
                 <FlagSwitch name="share.expenses" label="Gastos" checked={s.aiShare.expenses} />
                 <FlagSwitch name="share.health" label="Saúde" checked={s.aiShare.health} />
               </Stack>
-              <Text size="xs" mt={6} style={{ opacity: 0.75 }}>No plano gratuito, o Google pode usar o que é enviado para melhorar produtos. Por padrão, diário, gastos e saúde ficam de fora.</Text>
+              <Text size="xs" mt={6} style={{ opacity: 0.9 }}>No plano gratuito, o Google pode usar o que é enviado para melhorar produtos. Por padrão, diário, gastos e saúde ficam de fora.</Text>
             </Box>
             <SimpleGrid cols={2} spacing="xs">
               <Panel tone="plain" p="sm"><Text size="xs">IA usada hoje</Text><Text fw={800} fz={22}>{usage}<Text span size="sm" c="dimmed"> / {AI_DAILY_LIMIT}</Text></Text></Panel>
               <Panel tone="plain" p="sm"><Text size="xs">Plano B (7 dias)</Text><Text fw={800} fz={22}>{plans[0]?.n ?? 0} <Text span size="sm" c="dimmed">vezes</Text></Text></Panel>
             </SimpleGrid>
-            {reasons.length > 0 && <Text size="xs" style={{ opacity: 0.8 }}>Motivos do plano B: {reasons.map((r) => `${REASON[r.reason ?? ""] ?? r.reason ?? "regras"} (${r.n})`).join(", ")}.</Text>}
+            {reasons.length > 0 && <Text size="xs" style={{ opacity: 0.9 }}>Motivos do plano B: {reasons.map((r) => `${REASON[r.reason ?? ""] ?? r.reason ?? "regras"} (${r.n})`).join(", ")}.</Text>}
           </Stack>
         </Panel>
 
@@ -113,7 +113,7 @@ export default async function SettingsPage() {
             <Button component="a" href="/api/export?format=json" download size="md" variant="white" color="lavender.7" leftSection={<Icon name="upload" size={18} />}>Exportar tudo (JSON)</Button>
             <details>
               <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Exportar uma tabela em CSV</summary>
-              <Group gap={6} mt="xs">{EXPORT_TABLES.map((t) => <Button key={t.table} component="a" href={`/api/export?format=csv&table=${t.table}`} download size="compact-xs" variant="light" color="lavender.7">{t.label}</Button>)}</Group>
+              <Group gap={6} mt="xs">{EXPORT_TABLES.map((t) => <Button key={t.table} component="a" href={`/api/export?format=csv&table=${t.table}`} download size="compact-xs" variant="light" color="lavender">{t.label}</Button>)}</Group>
             </details>
             <ImportForm />
           </Stack>

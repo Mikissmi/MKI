@@ -36,7 +36,7 @@ export default async function StudioPage() {
       <PageHeader title="Estúdio criativo" back="/mais" />
       <Stack gap="md">
         <Panel tone="sage" title="Meus projetos" icon="notebook" action={<AddSheet title="Novo projeto criativo" fields={projectFields} values={{ kind: "desenho" }} action={saveProject} />}>
-          {projects.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Reúna desenho, escrita, programação, artesanato ou fotografia: fotos, rascunhos e versões ficam juntos.</Text>}
+          {projects.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Reúna desenho, escrita, programação, artesanato ou fotografia: fotos, rascunhos e versões ficam juntos.</Text>}
           <SimpleGrid cols={3} spacing="xs">
             {projects.map((p) => (
               <Link key={p.id} href={`/estudio/${p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -47,7 +47,7 @@ export default async function StudioPage() {
         </Panel>
 
         <Panel tone="lavender" title="Inspirações" icon="photo" action={<AddSheet title="Nova inspiração" fields={inspFields} values={{ project_id: "" }} action={saveInspiration} />}>
-          {inspirations.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Guarde imagens, links e referências (por link).</Text>}
+          {inspirations.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Guarde imagens, links e referências (por link).</Text>}
           <SimpleGrid cols={4} spacing={6}>
             {inspirations.map((i) => (
               <FormSheet key={i.id} title="Editar inspiração" fields={inspFields} values={{ id: i.id, image_url: i.image_url, link: i.link, note: i.note, project_id: i.project_id ?? "" }} action={saveInspiration} remove={deleteInspiration}>
@@ -61,8 +61,8 @@ export default async function StudioPage() {
           <Panel tone="sun" p="sm" title="Desafio da semana" icon="pencil">
             <Text size="sm" fw={700} td={challenge?.done ? "line-through" : undefined}>{challenge?.text ?? "Quer um tema criativo para esta semana?"}</Text>
             <Group gap={6} mt="xs">
-              <form action={drawChallenge}><Button type="submit" size="compact-xs" variant="white" color="gray">{challenge ? "Trocar" : "Sortear"}</Button></form>
-              {challenge && <form action={toggleChallenge}><Button type="submit" size="compact-xs" color="sage.7" variant={challenge.done ? "filled" : "light"}>{challenge.done ? "Concluído" : "Concluir"}</Button></form>}
+              <form action={drawChallenge}><Button type="submit" size="compact-xs" variant="white" color="dark">{challenge ? "Trocar" : "Sortear"}</Button></form>
+              {challenge && <form action={toggleChallenge}><Button type="submit" size="compact-xs" color="sage" variant={challenge.done ? "filled" : "light"}>{challenge.done ? "Concluído" : "Concluir"}</Button></form>}
             </Group>
           </Panel>
           <Panel tone="lavender" p="sm" title="Sessão" icon="clock"><CreativeTimer projects={projects.map((p) => ({ id: p.id, title: p.title }))} /></Panel>

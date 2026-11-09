@@ -55,21 +55,21 @@ export default async function MusicPage({ searchParams }: { searchParams: Promis
               <Cover url={trilha.cover_url} icon="music" width={96} height={96} radius={18} />
               <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
                 <Text fw={800} fz={18} lh={1.2}>{trilha.title}</Text>
-                {trilha.subtitle && <Text size="sm" style={{ opacity: 0.8 }}>{trilha.subtitle}</Text>}
+                {trilha.subtitle && <Text size="sm" style={{ opacity: 0.9 }}>{trilha.subtitle}</Text>}
                 <Group gap={6}>{trilha.mood && <Pill tone="lavender">{trilha.mood}</Pill>}{trilha.is_today && <Pill tone="pink">do dia</Pill>}</Group>
                 <Group gap={6}>
                   {trilha.url && <Button component="a" href={trilha.url} target="_blank" rel="noopener noreferrer" size="compact-sm" leftSection={<Icon name="play" size={14} />} rightSection={<Icon name="external" size={12} />}>Abrir no app de música</Button>}
-                  <FormSheet title="Editar playlist" fields={playlistFields} values={{ id: trilha.id, title: trilha.title, subtitle: trilha.subtitle, url: trilha.url, cover_url: trilha.cover_url, mood: trilha.mood ?? "", is_today: trilha.is_today }} action={savePlaylist} remove={deletePlaylist} block={false}><Button component="span" size="compact-sm" variant="white" color="gray">Editar</Button></FormSheet>
+                  <FormSheet title="Editar playlist" fields={playlistFields} values={{ id: trilha.id, title: trilha.title, subtitle: trilha.subtitle, url: trilha.url, cover_url: trilha.cover_url, mood: trilha.mood ?? "", is_today: trilha.is_today }} action={savePlaylist} remove={deletePlaylist} block={false}><Button component="span" size="compact-sm" variant="white" color="dark">Editar</Button></FormSheet>
                 </Group>
               </Stack>
             </Group>
-          ) : <Text size="sm" style={{ opacity: 0.8 }}>Cadastre uma playlist e associe a um humor. Ela abre no seu app de música.</Text>}
+          ) : <Text size="sm" style={{ opacity: 0.9 }}>Cadastre uma playlist e associe a um humor. Ela abre no seu app de música.</Text>}
           {playlists.length > 1 && <Group gap={6} mt="sm">{playlists.filter((p) => p.id !== trilha?.id).map((p) => (
             <FormSheet key={p.id} title="Editar playlist" fields={playlistFields} values={{ id: p.id, title: p.title, subtitle: p.subtitle, url: p.url, cover_url: p.cover_url, mood: p.mood ?? "", is_today: p.is_today }} action={savePlaylist} remove={deletePlaylist} block={false}><Pill tone="plain">{p.title}</Pill></FormSheet>))}</Group>}
         </Panel>
 
         <Panel tone="sun" title="Álbuns e podcasts" icon="headphones">
-          {items.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>{tab === "ouvir" ? "Sua lista para ouvir está vazia." : "Nada marcado como ouvido ainda."}</Text>}
+          {items.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>{tab === "ouvir" ? "Sua lista para ouvir está vazia." : "Nada marcado como ouvido ainda."}</Text>}
           <SimpleGrid cols={3} spacing="xs">
             {items.map((a) => (
               <FormSheet key={a.id} title="Editar" fields={audioFields} values={{ id: a.id, kind: a.kind, title: a.title, creator: a.creator, status: a.status, rating: a.rating?.replace(".", ","), progress: a.progress, cover_url: a.cover_url, link: a.link, comment: a.comment }} action={saveAudio} remove={deleteAudio}>
@@ -87,7 +87,7 @@ export default async function MusicPage({ searchParams }: { searchParams: Promis
           <Panel tone="lavender" title="Último episódio ouvido" icon="headphones">
             <Group wrap="nowrap" gap="sm">
               <Cover url={lastPod[0].cover_url} icon="mic" tone="lavender" width={64} height={64} radius={14} />
-              <div style={{ flex: 1, minWidth: 0 }}><Text fw={800}>{lastPod[0].title}</Text><Text size="sm" style={{ opacity: 0.8 }}>{lastPod[0].progress}</Text></div>
+              <div style={{ flex: 1, minWidth: 0 }}><Text fw={800}>{lastPod[0].title}</Text><Text size="sm" style={{ opacity: 0.9 }}>{lastPod[0].progress}</Text></div>
               {lastPod[0].link && <Button component="a" href={lastPod[0].link} target="_blank" rel="noopener noreferrer" size="compact-md" radius="xl" aria-label="Continuar ouvindo" color="lavender.6"><Icon name="play" size={16} /></Button>}
             </Group>
           </Panel>

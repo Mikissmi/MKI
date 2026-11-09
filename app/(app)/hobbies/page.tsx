@@ -86,7 +86,7 @@ export default async function HobbiesPage({ searchParams }: { searchParams: Prom
                       </FormSheet>
                       <form action={quickLogActivity} style={{ marginLeft: "auto" }}>
                         <input type="hidden" name="activity_id" value={a.id} /><input type="hidden" name="duration_min" value={a.minutes} />
-                        <Button type="submit" size="compact-sm" variant={a.done_today ? "light" : "filled"} color="sage.6" aria-label={`Registrar que fez ${a.name} hoje`}>{a.done_today ? "Feito" : "Fiz"}</Button>
+                        <Button type="submit" size="compact-sm" variant={a.done_today ? "light" : "filled"} color="sage" aria-label={`${a.done_today ? "Feito" : "Fiz"}: registrar ${a.name} hoje`}>{a.done_today ? "Feito" : "Fiz"}</Button>
                       </form>
                     </Group>
                   </Panel>
@@ -138,17 +138,17 @@ export default async function HobbiesPage({ searchParams }: { searchParams: Prom
                 return (
                   <Panel key={p.id} tone="sage" p="sm">
                     <Group wrap="nowrap" gap="sm" align="flex-start">
-                      <Link href={`/hobbies/projetos/${p.id}`}><Cover url={p.cover_url} icon="notebook" tone="sage" width={64} height={84} /></Link>
+                      <Link href={`/hobbies/projetos/${p.id}`} aria-label={`Abrir ${p.name}`}><Cover url={p.cover_url} icon="notebook" tone="sage" width={64} height={84} /></Link>
                       <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
                         <Text size="xs" fw={700}>Projeto pessoal</Text>
                         <Link href={`/hobbies/projetos/${p.id}`} style={{ textDecoration: "none", color: "inherit" }}><Text fw={800}>{p.name}</Text></Link>
                         <Group gap={8} wrap="nowrap"><Box style={{ flex: 1 }}><ProgressBar value={pct} tone="sage" /></Box><Text size="xs" fw={800}>{pct}%</Text></Group>
-                        <Text size="xs" style={{ opacity: 0.8 }}>{steps > 0 ? `${done} de ${steps} etapas` : "Sem etapas ainda"}</Text>
+                        <Text size="xs" style={{ opacity: 0.9 }}>{steps > 0 ? `${done} de ${steps} etapas` : "Sem etapas ainda"}</Text>
                       </Stack>
                     </Group>
                     <Group gap={6} mt="xs">
                       <LinkButton href={`/hobbies/projetos/${p.id}`} size="compact-xs" color="sage.7">Etapas</LinkButton>
-                      <FormSheet title="Editar projeto" fields={projectFields} values={{ id: p.id, name: p.name, description: p.description, notes: p.notes, progress: p.progress, cover_url: p.cover_url }} action={saveProject} remove={deleteProject} block={false}><Button component="span" size="compact-xs" variant="white" color="gray">Editar</Button></FormSheet>
+                      <FormSheet title="Editar projeto" fields={projectFields} values={{ id: p.id, name: p.name, description: p.description, notes: p.notes, progress: p.progress, cover_url: p.cover_url }} action={saveProject} remove={deleteProject} block={false}><Button component="span" size="compact-xs" variant="white" color="dark">Editar</Button></FormSheet>
                     </Group>
                   </Panel>
                 );
@@ -168,7 +168,7 @@ export default async function HobbiesPage({ searchParams }: { searchParams: Prom
           for (const l of logs) byDay.set(l.date, [...(byDay.get(l.date) ?? []), l]);
           return (<>
             <Panel tone="lavender" title="Frequência nos últimos 30 dias" icon="chart">
-              <Stack gap={4}>{freq.length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Registre atividades com o botão "Fiz" para ver a frequência.</Text>}
+              <Stack gap={4}>{freq.length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Registre atividades com o botão "Fiz" para ver a frequência.</Text>}
                 {freq.map((f) => <Group key={f.name} justify="space-between"><Text size="sm">{f.name}</Text><Text size="sm" fw={800}>{f.n}x · {f.min} min</Text></Group>)}</Stack>
             </Panel>
             {[...byDay.entries()].map(([d, list]) => (

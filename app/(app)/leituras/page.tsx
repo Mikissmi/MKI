@@ -56,18 +56,18 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
         {kind === "livro" && (<>
           <Panel tone="pink" title="Lendo agora" icon="book2">
             <Stack gap="sm">
-              {by("lendo").length === 0 && <Text size="sm" style={{ opacity: 0.8 }}>Nenhum livro em andamento. Marque um como "Lendo".</Text>}
+              {by("lendo").length === 0 && <Text size="sm" style={{ opacity: 0.9 }}>Nenhum livro em andamento. Marque um como "Lendo".</Text>}
               {by("lendo").map((b) => (
                 <Box key={b.id}>
                   <Group wrap="nowrap" align="flex-start" gap="sm">
-                    <Link href={`/leituras/${b.id}`}><Cover url={b.cover_url} icon="book" width={84} height={116} /></Link>
+                    <Link href={`/leituras/${b.id}`} aria-label={`Abrir ${b.title}`}><Cover url={b.cover_url} icon="book" width={84} height={116} /></Link>
                     <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
                       <Link href={`/leituras/${b.id}`} style={{ textDecoration: "none", color: "inherit" }}><Text fw={800} lh={1.2}>{b.title}</Text></Link>
-                      {b.author && <Text size="xs" style={{ opacity: 0.75 }}>{b.author}</Text>}
-                      {b.total_pages ? (<><Text size="xs">Página {b.current_page ?? 0} de {b.total_pages}</Text><Group gap={8} wrap="nowrap"><Box style={{ flex: 1 }}><ProgressBar value={progressPct(b)} /></Box><Text size="xs" fw={800}>{progressPct(b)}%</Text></Group></>) : <Text size="xs" style={{ opacity: 0.75 }}>Informe o total de páginas para ver o progresso.</Text>}
+                      {b.author && <Text size="xs" style={{ opacity: 0.9 }}>{b.author}</Text>}
+                      {b.total_pages ? (<><Text size="xs">Página {b.current_page ?? 0} de {b.total_pages}</Text><Group gap={8} wrap="nowrap"><Box style={{ flex: 1 }}><ProgressBar value={progressPct(b)} /></Box><Text size="xs" fw={800}>{progressPct(b)}%</Text></Group></>) : <Text size="xs" style={{ opacity: 0.9 }}>Informe o total de páginas para ver o progresso.</Text>}
                       <Group gap={6} mt={2}>
                         <FormSheet title="Registrar leitura" fields={logFields} hidden={{ item_id: b.id }} action={logReading} submitLabel="Registrar" block={false}><Button component="span" size="compact-sm" leftSection="+">Registrar leitura</Button></FormSheet>
-                        <FormSheet title="Editar" fields={fields} values={readingValues(b)} hidden={{ kind }} action={saveReading} remove={deleteReading} block={false}><Button component="span" size="compact-sm" variant="white" color="gray">Editar</Button></FormSheet>
+                        <FormSheet title="Editar" fields={fields} values={readingValues(b)} hidden={{ kind }} action={saveReading} remove={deleteReading} block={false}><Button component="span" size="compact-sm" variant="white" color="dark">Editar</Button></FormSheet>
                       </Group>
                     </Stack>
                   </Group>
@@ -88,7 +88,7 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
           <Panel tone="sage" title="Meta de leitura da semana" icon="trophy">
             <Text fw={800} fz={20}>{done} de {goal} sessões</Text>
             <Group gap={4} my={8} grow>{Array.from({ length: Math.min(goal, 14) }, (_, i) => <Box key={i} h={10} style={{ borderRadius: 6, background: i < done ? "var(--mantine-color-sage-6)" : "var(--mantine-color-sage-2)" }} />)}</Group>
-            <Text size="xs" style={{ opacity: 0.8 }}>Livros lidos neste ano: {booksYear?.n ?? 0} de {settings.readingBooksPerYear}.</Text>
+            <Text size="xs" style={{ opacity: 0.9 }}>Livros lidos neste ano: {booksYear?.n ?? 0} de {settings.readingBooksPerYear}.</Text>
           </Panel>
 
           {(by("lido").length > 0 || by("abandonado").length > 0) && (
@@ -117,7 +117,7 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
                   <Group gap={6} mt="xs">
                     <form action={setReadingStatus}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="status" value="lido" /><Button type="submit" size="compact-xs" color="sage.7">Marcar como lido</Button></form>
                     <form action={setReadingStatus}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="status" value="arquivado" /><Button type="submit" size="compact-xs" variant="light" color="gray">Arquivar</Button></form>
-                    {edit(a, <Button component="span" size="compact-xs" variant="subtle" color="gray">Editar</Button>)}
+                    {edit(a, <Button component="span" size="compact-xs" variant="subtle" color="dark">Editar</Button>)}
                   </Group>
                 </Box>
               ))}

@@ -55,11 +55,11 @@ export default async function SourcesPage() {
         </Panel>
 
         <Panel tone="lavender" title="Temas de interesse" icon="sparkles" action={<AddSheet title="Novo tema" fields={topicFields} values={{ tone: "pink" }} action={saveTopic} />}>
-          <Text size="xs" mb="xs" style={{ opacity: 0.8 }}>As matérias com essas palavras no título ou no resumo ganham o tema e aparecem nos filtros.</Text>
+          <Text size="xs" mb="xs" style={{ opacity: 0.9 }}>As matérias com essas palavras no título ou no resumo ganham o tema e aparecem nos filtros.</Text>
           <Stack gap={6}>
             {topics.map((t) => (
               <FormSheet key={t.id} title="Editar tema" fields={topicFields} values={{ id: t.id, name: t.name, keywords: t.keywords.join(", "), tone: t.tone }} action={saveTopic} remove={deleteTopic}>
-                <Group justify="space-between" wrap="nowrap"><Text size="sm" fw={800}>{t.name}</Text><Text size="xs" truncate style={{ opacity: 0.75 }}>{t.keywords.slice(0, 4).join(", ")}</Text></Group>
+                <Group justify="space-between" wrap="nowrap"><Text size="sm" fw={800}>{t.name}</Text><Text size="xs" truncate style={{ opacity: 0.9 }}>{t.keywords.slice(0, 4).join(", ")}</Text></Group>
               </FormSheet>
             ))}
           </Stack>

@@ -164,7 +164,7 @@ export default async function HabitsPage({ searchParams }: { searchParams: Promi
         )}
 
         <Panel tone="lavender" title="Mini-vitórias do Dia leve" icon="sparkles" action={<AddSheet title="Nova mini-vitória" fields={winFields} values={{ duration_min: "10", energy: "baixa", screen_type: "sem_tela" }} action={saveQuickWin} />}>
-          <Text size="xs" mb="xs" style={{ opacity: 0.8 }}>Coisas de 5 a 10 minutos para os dias de pouca energia.</Text>
+          <Text size="xs" mb="xs" style={{ opacity: 0.9 }}>Coisas de 5 a 10 minutos para os dias de pouca energia.</Text>
           <Stack gap={6}>
             {wins.length === 0 && <Text size="sm" c="dimmed">Cadastre, por exemplo: alongar, ler uma página, ouvir um álbum, rabiscar.</Text>}
             {wins.map((w) => (

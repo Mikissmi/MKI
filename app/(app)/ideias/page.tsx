@@ -27,7 +27,7 @@ export default async function IdeasPage() {
                 <form action={toggleIdea}><input type="hidden" name="id" value={i.id} />
                   <button type="submit" aria-pressed={i.done} aria-label={i.done ? "Marcar como pendente" : "Marcar como feita"} style={{ width: 26, height: 26, borderRadius: 9, border: "2px solid var(--mantine-color-lotus-4)", background: i.done ? "var(--mantine-color-lotus-5)" : "transparent", color: "#fff", display: "grid", placeItems: "center", cursor: "pointer", padding: 0 }}>{i.done && <Icon name="check" size={16} stroke={3} />}</button></form>
                 <div style={{ flex: 1, minWidth: 0 }}><Text size="sm" td={i.done ? "line-through" : undefined} c={i.done ? "dimmed" : undefined} style={{ whiteSpace: "pre-wrap" }}>{i.text}</Text><Text size="xs" c="dimmed">{fmtDateKey(i.day)}</Text></div>
-                <form action={deleteIdea}><input type="hidden" name="id" value={i.id} /><Button type="submit" size="compact-xs" variant="subtle" color="gray" aria-label="Excluir ideia"><Icon name="trash" size={14} /></Button></form>
+                <form action={deleteIdea}><input type="hidden" name="id" value={i.id} /><Button type="submit" size="compact-xs" variant="subtle" color="dark" aria-label="Excluir ideia"><Icon name="trash" size={14} /></Button></form>
               </Group>
             ))}
           </Stack>

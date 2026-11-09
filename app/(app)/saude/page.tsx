@@ -78,7 +78,7 @@ export default async function HealthPage() {
           <FormSheet title="Sono de hoje" fields={sleepFields} values={{ id: lastSleep?.date === today ? lastSleep.id : undefined, slept_at: lastSleep ? t5(lastSleep.slept_at) : "23:00", woke_at: lastSleep ? t5(lastSleep.woke_at) : "07:00", quality: lastSleep?.quality }} hidden={{ date: today }} action={saveSleep}>
             <Panel tone="lavender" title="Sono" icon="moon" p="sm" style={{ height: "100%" }}>
               {lastSleep ? (<>
-                <Group grow gap={4}><div><Text size="10px" style={{ opacity: 0.7 }}>Dormiu</Text><Text fw={800}>{t5(lastSleep.slept_at)}</Text></div><div><Text size="10px" style={{ opacity: 0.7 }}>Acordou</Text><Text fw={800}>{t5(lastSleep.woke_at)}</Text></div></Group>
+                <Group grow gap={4}><div><Text size="10px" style={{ opacity: 0.9 }}>Dormiu</Text><Text fw={800}>{t5(lastSleep.slept_at)}</Text></div><div><Text size="10px" style={{ opacity: 0.9 }}>Acordou</Text><Text fw={800}>{t5(lastSleep.woke_at)}</Text></div></Group>
                 <Text fw={800} fz={22} mt={6}>{hm(sleepMinutes(lastSleep.slept_at, lastSleep.woke_at))}</Text>
               </>) : <Text size="sm" mt="xs">Toque para registrar o sono.</Text>}
             </Panel>
@@ -89,7 +89,7 @@ export default async function HealthPage() {
             <ProgressBar value={(water / goal) * 100} tone="sage" height={8} />
             <Group gap={6} mt={8} grow>
               <form action={addWater}><input type="hidden" name="delta" value="-1" /><button type="submit" aria-label="Tirar um copo" style={btn}>−</button></form>
-              <form action={addWater}><input type="hidden" name="delta" value="1" /><button type="submit" aria-label="Adicionar um copo" style={{ ...btn, background: "var(--mantine-color-sage-6)", color: "#fff" }}>+ copo</button></form>
+              <form action={addWater}><input type="hidden" name="delta" value="1" /><button type="submit" aria-label="Adicionar um copo" style={{ ...btn, background: "var(--mantine-color-sage-8)", color: "#fff" }}>+ copo</button></form>
             </Group>
           </Panel>
         </SimpleGrid>
@@ -106,7 +106,7 @@ export default async function HealthPage() {
               <Text size="xs" fw={800}>Planejado para hoje</Text>
               {planned.filter((p) => p.label && !meals.some((m) => m.meal === p.meal && m.description === p.label)).map((p) => (
                 <form key={p.meal} action={registerPlannedMeal}><input type="hidden" name="meal" value={p.meal} /><input type="hidden" name="description" value={p.label} />
-                  <Group gap="xs" wrap="nowrap" justify="space-between"><Text size="sm" truncate>{MEALS.find((x) => x.value === p.meal)?.label}: {p.label}</Text><Button type="submit" size="compact-xs" variant="white" color="gray">Registrar</Button></Group></form>
+                  <Group gap="xs" wrap="nowrap" justify="space-between"><Text size="sm" truncate>{MEALS.find((x) => x.value === p.meal)?.label}: {p.label}</Text><Button type="submit" size="compact-xs" variant="white" color="dark">Registrar</Button></Group></form>
               ))}
             </Stack>
           )}
@@ -116,14 +116,14 @@ export default async function HealthPage() {
                 <Group gap="xs" wrap="nowrap"><Text size="xs" fw={800} w={92} style={{ flexShrink: 0 }}>{ml.label}</Text><Text size="sm" truncate>{x.description}</Text></Group>
               </FormSheet>
             )))}
-            {meals.length === 0 && <Text size="xs" style={{ opacity: 0.8 }}>Nada registrado hoje. Toque em uma refeição para anotar.</Text>}
+            {meals.length === 0 && <Text size="xs" style={{ opacity: 0.9 }}>Nada registrado hoje. Toque em uma refeição para anotar.</Text>}
           </Stack>
         </Panel>
 
         <SimpleGrid cols={2} spacing="xs">
           <Panel tone="sage" title="Exercício" icon="run" p="sm" action={<AddSheet label="" title="Novo treino" fields={workoutFields} values={{ kind: "Caminhada", duration_min: "30" }} hidden={{ date: today }} action={saveWorkout} />}>
             <Stack gap={6}>
-              {workouts.length === 0 && <Text size="xs" style={{ opacity: 0.8 }}>Nenhum treino hoje.</Text>}
+              {workouts.length === 0 && <Text size="xs" style={{ opacity: 0.9 }}>Nenhum treino hoje.</Text>}
               {workouts.map((w) => (
                 <FormSheet key={w.id} title="Editar treino" fields={workoutFields} values={{ id: w.id, kind: w.kind, duration_min: w.duration_min }} hidden={{ date: today }} action={saveWorkout} remove={deleteWorkout}>
                   <Group gap={6} wrap="nowrap"><IconTile icon="walk" tone="sage" size={26} round /><Text size="sm" fw={700}>{w.kind} · {w.duration_min} min</Text></Group>
@@ -135,7 +135,7 @@ export default async function HealthPage() {
             <Panel tone="lavender" title="Medidas" icon="scale" p="sm" style={{ height: "100%" }}>
               <SimpleGrid cols={2} spacing={4}>
                 {[["Peso", m?.weight_kg ? `${m.weight_kg} kg` : "--"], ["Cintura", m?.waist_cm ? `${m.waist_cm} cm` : "--"], ["Quadril", m?.hip_cm ? `${m.hip_cm} cm` : "--"], ["Passos", m?.steps ? String(m.steps) : "--"]].map(([k, v]) => (
-                  <div key={k}><Text size="10px" style={{ opacity: 0.7 }}>{k}</Text><Text size="sm" fw={800}>{v}</Text></div>
+                  <div key={k}><Text size="10px" style={{ opacity: 0.9 }}>{k}</Text><Text size="sm" fw={800}>{v}</Text></div>
                 ))}
               </SimpleGrid>
             </Panel>

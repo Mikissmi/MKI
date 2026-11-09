@@ -26,7 +26,7 @@ function Compare({ label, now, before, fmt = (n: number) => String(n), goodWhenU
 }
 
 function List({ items, empty }: { items: string[]; empty: string }) {
-  return items.length ? <Stack gap={2}>{items.slice(0, 5).map((i) => <Text key={i} size="sm" lh={1.3}>{i}</Text>)}{items.length > 5 && <Text size="xs" c="dimmed">+{items.length - 5}</Text>}</Stack> : <Text size="xs" style={{ opacity: 0.7 }}>{empty}</Text>;
+  return items.length ? <Stack gap={2}>{items.slice(0, 5).map((i) => <Text key={i} size="sm" lh={1.3}>{i}</Text>)}{items.length > 5 && <Text size="xs" c="dimmed">+{items.length - 5}</Text>}</Stack> : <Text size="xs" style={{ opacity: 0.9 }}>{empty}</Text>;
 }
 
 export default async function RetroPage({ searchParams }: { searchParams: Promise<{ p?: string; d?: string }> }) {
@@ -79,7 +79,7 @@ export default async function RetroPage({ searchParams }: { searchParams: Promis
             {d.reading.finished.length > 0 && <Text size="xs" mt={4} fw={700}>Concluído: {d.reading.finished.join(", ")}</Text>}
           </Panel>
           <Panel tone="lavender" title="Atividades feitas" icon="star" p="sm">
-            {d.activities.top.length === 0 ? <Text size="xs" style={{ opacity: 0.7 }}>Nenhuma registrada.</Text> : <Stack gap={4}>{d.activities.top.slice(0, 4).map((a) => <Group key={a.name} justify="space-between" wrap="nowrap"><Text size="sm">{a.name}</Text><Text size="xs" fw={800}>{a.count}x</Text></Group>)}</Stack>}
+            {d.activities.top.length === 0 ? <Text size="xs" style={{ opacity: 0.9 }}>Nenhuma registrada.</Text> : <Stack gap={4}>{d.activities.top.slice(0, 4).map((a) => <Group key={a.name} justify="space-between" wrap="nowrap"><Text size="sm">{a.name}</Text><Text size="xs" fw={800}>{a.count}x</Text></Group>)}</Stack>}
           </Panel>
           <Panel tone="plain" title="Tempo de uso" icon="mobile" p="sm">
             <Group gap="xs" wrap="nowrap"><Donut size={64} thickness={12} slices={[{ label: "Com tela", value: d.screen.com, color: "#e85d97" }, { label: "Sem tela", value: d.screen.sem, color: "#6c935e" }]} />
@@ -129,7 +129,7 @@ export default async function RetroPage({ searchParams }: { searchParams: Promis
           <Panel tone="sage" title="Retrospectivas anteriores" icon="clock">
             <Stack gap={6}>{album.map((a) => (
               <Link key={`${a.period}${a.start_on}`} href={`/retrospectivas?p=${a.period}&d=${a.start_on}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <Group justify="space-between" wrap="nowrap"><div><Text size="sm" fw={700}>{a.period === "semana" ? `Semana de ${formatDateShort(a.start_on)}` : cap(formatMonth(a.start_on))}</Text>{a.reflection && <Text size="xs" lineClamp={1} style={{ opacity: 0.75 }}>{a.reflection}</Text>}</div>{a.label && <Pill tone="sage">{a.label}</Pill>}</Group>
+                <Group justify="space-between" wrap="nowrap"><div><Text size="sm" fw={700}>{a.period === "semana" ? `Semana de ${formatDateShort(a.start_on)}` : cap(formatMonth(a.start_on))}</Text>{a.reflection && <Text size="xs" lineClamp={1} style={{ opacity: 0.9 }}>{a.reflection}</Text>}</div>{a.label && <Pill tone="sage">{a.label}</Pill>}</Group>
               </Link>))}</Stack>
           </Panel>
         )}
