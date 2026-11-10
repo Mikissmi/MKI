@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { Container } from "@mantine/core";
 import { query } from "@/lib/db";
@@ -6,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { ensureCategories } from "@/lib/finance";
 import { accentCss } from "@/lib/accent";
 import { localDateKey } from "@/lib/time";
+import { recordOpen } from "@/lib/presence";
 import { BottomNav } from "@/components/BottomNav";
 import { QuickAdd } from "@/components/QuickAdd";
 import { OfflineSync } from "@/components/OfflineSync";
@@ -19,6 +21,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     getSettings(user.id), ensureCategories(user.id),
     query<{ id: string; name: string }>("SELECT h.id, h.name FROM habits h WHERE h.user_id = $1 AND NOT h.archived AND NOT EXISTS (SELECT 1 FROM habit_logs l WHERE l.habit_id = h.id AND l.date = $2::date) ORDER BY h.created_at", [user.id, localDateKey()]),
   ]);
+  // registra a abertura de hoje depois de responder (no máximo uma escrita por dia)
+  after(() => recordOpen(user.id, settings));
   const css = accentCss(settings.accent);
   return (
     <>

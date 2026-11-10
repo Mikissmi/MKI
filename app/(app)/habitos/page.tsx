@@ -55,7 +55,7 @@ export default async function HabitsPage({ searchParams }: { searchParams: Promi
     query<HabitRow>("SELECT id, name, icon, frequency, weekdays, times_per_week, routine FROM habits WHERE user_id = $1 AND NOT archived ORDER BY created_at", [user.id]),
     query<{ habit_id: string; date: string }>("SELECT habit_id, date::text AS date FROM habit_logs WHERE user_id = $1 AND date >= $2::date", [user.id, since]),
     query<{ id: string; title: string; duration_min: number; energy: string; screen_type: string }>("SELECT id, title, duration_min, energy, screen_type FROM quick_wins WHERE user_id = $1 ORDER BY created_at", [user.id]),
-    query<{ d: string }>("SELECT date::text AS d FROM checkins WHERE user_id = $1 AND energy <= 2 AND date >= $2::date UNION SELECT date::text FROM day_plans WHERE user_id = $1 AND light_day AND date >= $2::date", [user.id, since]),
+    query<{ d: string }>("SELECT date::text AS d FROM checkins WHERE user_id = $1 AND energy <= 2 AND date >= $2::date UNION SELECT date::text FROM paused_days WHERE user_id = $1 AND date >= $2::date UNION SELECT date::text FROM day_plans WHERE user_id = $1 AND light_day AND date >= $2::date", [user.id, since]),
   ]);
   const pausedDays = new Set(paused.map((p) => p.d));
   const lightToday = pausedDays.has(today);

@@ -37,6 +37,7 @@ export default async function RetroPage({ searchParams }: { searchParams: Promis
   const start = periodStart(period, isDateKey(sp.d) ? sp.d : today);
   const end = periodEnd(period, start);
   const { data, reflection } = await getRetro(user.id, period, start, today);
+  const lines = await query<{ date: string; line: string }>("SELECT date::text AS date, line FROM daily_closings WHERE user_id = $1 AND date BETWEEN $2::date AND $3::date AND line IS NOT NULL AND line <> '' ORDER BY date", [user.id, start, end]);
   if (end < today) await query("UPDATE retrospectives SET viewed_at = COALESCE(viewed_at, now()) WHERE user_id = $1 AND period = $2 AND start_on = $3::date", [user.id, period, start]);
   const album = await query<{ period: Period; start_on: string; end_on: string; label: string | null; reflection: string | null }>(
     "SELECT period, start_on::text AS start_on, end_on::text AS end_on, data->>'label' AS label, reflection FROM retrospectives WHERE user_id = $1 AND NOT (period = $3 AND start_on = $2::date) ORDER BY start_on DESC LIMIT 24", [user.id, start, period]);
@@ -112,6 +113,12 @@ export default async function RetroPage({ searchParams }: { searchParams: Promis
             <div><Text size="xs" fw={800} mb={2}>Criei</Text>{d.created.sessions > 0 ? <Text size="sm">{d.created.minutes} min em {d.created.sessions} {d.created.sessions === 1 ? "sessão" : "sessões"}</Text> : null}<List items={d.created.projects} empty={d.created.sessions ? "" : "--"} /></div>
           </SimpleGrid>
         </Panel>
+
+        {lines.length > 0 && (
+          <Panel tone="plain" title="O que você escreveu nos fechamentos" icon="notes">
+            <Stack gap={6}>{lines.map((l) => <div key={l.date}><Text size="xs" c="dimmed">{formatDateShort(l.date)}</Text><Text size="sm" lh={1.3}>{l.line}</Text></div>)}</Stack>
+          </Panel>
+        )}
 
         <Panel tone="plain" title={`Comparação com ${period === "semana" ? "a semana" : "o mês"} anterior`} icon="line">
           {p ? (<Stack gap={6}>

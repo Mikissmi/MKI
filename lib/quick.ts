@@ -4,6 +4,7 @@ import { fetchLinkMeta } from "@/lib/safe-fetch";
 import { ensureCategories } from "@/lib/finance";
 import { addDays, isDateKey, localDateKey } from "@/lib/time";
 import { parseDecimal } from "@/lib/schema-kit";
+import { parseTime } from "@/lib/time";
 
 const date = z.string().refine(isDateKey).optional();
 const base = { clientId: z.string().uuid(), date };
@@ -14,6 +15,8 @@ export const quickSchema = z.discriminatedUnion("type", [
   z.object({ ...base, type: z.literal("mood"), mood: z.number().int().min(1).max(5), energy: z.number().int().min(1).max(5) }),
   z.object({ ...base, type: z.literal("habit"), habit_id: z.string().uuid() }),
   z.object({ ...base, type: z.literal("idea"), text: z.string().trim().min(1).max(500) }),
+  z.object({ ...base, type: z.literal("sleep"), slept_at: z.string().refine((t) => parseTime(t) !== null), woke_at: z.string().refine((t) => parseTime(t) !== null), quality: z.number().int().min(1).max(5).nullable().optional() }),
+  z.object({ ...base, type: z.literal("workout"), kind: z.string().trim().min(1).max(40), minutes: z.number().int().min(1).max(600) }),
   z.object({ ...base, type: z.literal("link"), url: z.string().trim().max(1000).regex(/^https?:\/\/\S+$/i, "Use um link que comece com http ou https") }),
 ]);
 export type QuickOp = z.infer<typeof quickSchema>;
@@ -50,6 +53,13 @@ export async function applyQuick(userId: string, op: QuickOp): Promise<{ ok: boo
         break;
       case "idea":
         await query("INSERT INTO ideas (user_id, text) VALUES ($1,$2)", [userId, op.text]);
+        break;
+      case "sleep":
+        await query(`INSERT INTO sleep_logs (user_id, date, slept_at, woke_at, quality) VALUES ($1,$2::date,$3::time,$4::time,$5)
+                     ON CONFLICT (user_id, date) DO UPDATE SET slept_at = $3::time, woke_at = $4::time, quality = $5`, [userId, day, op.slept_at, op.woke_at, op.quality ?? null]);
+        break;
+      case "workout":
+        await query("INSERT INTO workout_logs (user_id, date, kind, duration_min) VALUES ($1,$2::date,$3,$4)", [userId, day, op.kind, op.minutes]);
         break;
       case "link": {
         const exists = await queryOne("SELECT 1 FROM reading_items WHERE user_id = $1 AND kind = 'artigo' AND url = $2", [userId, op.url]);

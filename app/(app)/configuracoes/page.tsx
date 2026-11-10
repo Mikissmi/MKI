@@ -14,8 +14,9 @@ import { Panel, Pill } from "@/components/ui/Panel";
 import { FlagSwitch, ThemeSwitch } from "@/components/SettingsControls";
 import { FormSheet, type Field } from "@/components/forms/FormSheet";
 import { LogoutButton } from "@/components/LogoutButton";
+import { LinkButton } from "@/components/LinkButton";
 import { ImportForm } from "@/components/ImportForm";
-import { connectSpotify, disconnectSpotify, saveAccent, saveGoals, saveProfile, saveSpotifyLimits } from "./actions";
+import { connectSpotify, disconnectSpotify, saveAccent, saveGoals, saveProfile, saveSpotifyLimits, saveWelcome } from "./actions";
 import { spotifyStatus } from "@/lib/spotify/service";
 import { redirectUriProblem, spotifyConfig } from "@/lib/spotify/config";
 import { saveHours } from "../agenda/actions";
@@ -174,6 +175,32 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <Group justify="space-between"><Text size="sm">Espera após falha da IA</Text><Text size="sm" fw={800}>{s.aiCooldownMin} min</Text></Group>
             </Stack>
           </FormSheet>
+        </Panel>
+
+        <Panel tone="plain" title="Presença no dia a dia" icon="sparkles">
+          <Stack gap="sm">
+            <FlagSwitch name="morningSummary" label="Resumo da manhã" description="Plano, duas notícias e o foco do dia no topo de Hoje, até o meio-dia" checked={s.morningSummary} />
+            <FlagSwitch name="memoryCard" label="Relembrar o que você guardou" description="Um trecho, receita, álbum, desejo ou ideia seu por dia" checked={s.memoryCard} />
+            <FormSheet title="Boas-vindas de volta" fields={[{ name: "days", label: "Dias sem abrir o app", type: "decimal", required: true, description: "Depois disso, a próxima abertura mostra as boas-vindas e pausa os hábitos no período." }]} values={{ days: s.welcomeAfterDays }} action={saveWelcome}>
+              <Group justify="space-between"><Text size="sm">Boas-vindas depois de</Text><Text size="sm" fw={800}>{s.welcomeAfterDays} dias sem abrir</Text></Group>
+            </FormSheet>
+            <Group gap="xs"><LinkButton href="/fechamento" size="compact-sm" variant="light">Fechamento da noite</LinkButton><LinkButton href="/?resumo=1" size="compact-sm" variant="light">Ver o resumo da manhã</LinkButton></Group>
+          </Stack>
+        </Panel>
+
+        <Panel tone="plain" title="Atalhos do ícone" icon="grid">
+          <Text size="sm" c="dimmed" mb="xs">Menu que abre ao segurar o ícone do app (Android).</Text>
+          <LinkButton href="/configuracoes/atalhos" size="compact-sm" variant="light">Escolher atalhos</LinkButton>
+        </Panel>
+
+        <Panel tone="plain" title="Calendário assinável" icon="calendar">
+          <Text size="sm" c="dimmed" mb="xs">Veja seus eventos e deslocamentos no Google Agenda ou no app de agenda do celular.</Text>
+          <LinkButton href="/configuracoes/calendario" size="compact-sm" variant="light">Endereço e alarmes</LinkButton>
+        </Panel>
+
+        <Panel tone="plain" title="Notificações" icon="bell">
+          <Text size="sm" c="dimmed" mb="xs">Avisos opcionais: plano pronto, fechamento da noite, lembrete de evento e retrospectiva.</Text>
+          <LinkButton href="/configuracoes/notificacoes" size="compact-sm" variant="light">Configurar notificações</LinkButton>
         </Panel>
 
         <Panel tone="plain" title="Avisos" icon="bell">

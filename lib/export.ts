@@ -5,7 +5,7 @@ export const EXPORT_TABLES = [
   { table: "categories", label: "Categorias" }, { table: "habits", label: "Hábitos" }, { table: "quick_wins", label: "Mini-vitórias" }, { table: "topics", label: "Temas" }, { table: "feeds", label: "Feeds" },
   { table: "recipes", label: "Receitas" }, { table: "trips", label: "Viagens" }, { table: "creative_projects", label: "Projetos criativos" }, { table: "reading_items", label: "Leituras" },
   { table: "activities", label: "Atividades" }, { table: "projects", label: "Projetos" }, { table: "playlists", label: "Playlists" }, { table: "audio_items", label: "Música e podcasts" },
-  { table: "media_items", label: "Mídia" }, { table: "wishlist_items", label: "Desejos" }, { table: "ideas", label: "Ideias" },
+  { table: "media_items", label: "Mídia" }, { table: "wishlist_items", label: "Desejos" }, { table: "ideas", label: "Ideias" }, { table: "daily_closings", label: "Fechamentos da noite" },
   { table: "habit_logs", label: "Registros de hábitos" }, { table: "reading_notes", label: "Anotações de leitura" }, { table: "reading_logs", label: "Histórico de leitura" }, { table: "activity_logs", label: "Histórico de atividades" },
   { table: "project_steps", label: "Etapas de projetos" }, { table: "news_items", label: "Notícias" }, { table: "meal_plans", label: "Planejamento de refeições" }, { table: "shopping_items", label: "Lista de compras" },
   { table: "cooked_log", label: "O que cozinhei" }, { table: "creative_entries", label: "Versões criativas" }, { table: "inspirations", label: "Inspirações" }, { table: "challenges", label: "Desafios" },

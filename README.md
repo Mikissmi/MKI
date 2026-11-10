@@ -14,7 +14,8 @@ Painel pessoal da vida (PWA): agenda, rotina, hábitos, leituras, lazer, saúde,
 | **Finanças, Notícias (RSS)** | gastos por categoria, orçamento, rosca; feeds com temas; matérias lidas dentro do app (texto em modo leitura, resumo simples ou com IA), marcar como lida cria o artigo em Leituras |
 | **Receitas, Estúdio, Viagens, Desejos** | planejador semanal e lista de compras, sessões com timer, roteiros e mala, período de espera antes de comprar |
 | **Retrospectivas** | semanal e mensal, geradas ao abrir e guardadas, com comparação e reflexão |
-| **Configurações** | perfil, tema e cor, rotina, IA e o que compartilhar, conexão com o Spotify, metas, exportar/importar |
+| **Presença no dia a dia** | atalhos no ícone do app (6 kits ou 4 à sua escolha, telas de um toque em `/quick/*`), compartilhar links de outros apps para Ler depois, Ideia, Receita ou Desejo, fechamento da noite, boas-vindas depois de alguns dias sem abrir, card "Lembra disto?", resumo da manhã, calendário assinável (.ics) e notificações opcionais |
+| **Configurações** | perfil, tema e cor, rotina, IA e o que compartilhar, atalhos, calendário, notificações, conexão com o Spotify, metas, exportar/importar |
 | **Offline** | páginas já visitadas abrem sem internet; registros rápidos ficam numa fila e são enviados ao voltar |
 
 ## Deploy (Vercel) sem passos manuais
@@ -33,6 +34,17 @@ A cada deploy o script `vercel-build` (`scripts/bootstrap.ts`) aplica as migraç
 Opcionais: `GEMINI_MODEL` (padrão `gemini-2.5-flash`).
 
 Spotify (opcional; sem elas o app funciona igual e Configurações mostra o que falta): `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` e `SPOTIFY_TOKEN_KEY`. Passo a passo abaixo.
+
+## Presença no dia a dia (atalhos, calendário, notificações)
+
+- **Atalhos do ícone** (Android com o app instalado): Configurações → Atalhos. O manifesto é gerado pelo servidor com o kit escolhido; o Android demora a atualizar o menu (se não mudar, reinstale o app na tela inicial). Os ícones ficam em `public/icons/shortcuts/` (`npm run shortcut-icons` gera de novo).
+- **Compartilhar para o MKI** (Android com o app instalado): no navegador, YouTube etc., toque em compartilhar e escolha o MKI; ele pergunta o destino (Ler depois é o padrão) e busca título e capa do link.
+- **Calendário assinável**: Configurações → Calendário assinável gera um endereço `.ics` com código secreto (só leitura, só títulos e horários, com alarme configurável). No Google Agenda: Outros calendários → Do URL. Gerar outro endereço ou revogar derruba o anterior na hora. Os apps de agenda atualizam com atraso (às vezes horas).
+- **Notificações** (opcionais, desligadas até você ligar): precisam de três coisas no servidor e de um agendador externo.
+  1. Gere as chaves com `npm run vapid` e crie na Vercel `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT` (por exemplo `mailto:seu-email@exemplo.com`).
+  2. Crie `CRON_SECRET` (um texto aleatório de 16+ caracteres; `openssl rand -base64 24`).
+  3. O plano gratuito da Vercel só roda cron uma vez por dia, então um serviço externo chama `GET https://SEU-APP.vercel.app/api/cron/notify` com o cabeçalho `Authorization: Bearer SEU_CRON_SECRET` a cada poucos minutos. O arquivo `.github/workflows/notify.yml` faz isso pelo GitHub Actions: crie os *secrets* `MKI_URL` e `CRON_SECRET` no repositório. Alternativa: cron-job.org com a mesma URL e cabeçalho.
+  4. Em Configurações → Notificações, toque em **Ligar neste aparelho** (o navegador pede permissão), escolha os avisos, os horários e o horário silencioso, e use **Enviar notificação de teste** (o teste ignora o horário silencioso porque é um pedido seu). Os avisos automáticos respeitam o horário silencioso e o limite de 3 por dia (lembretes de evento não contam). **Desligar tudo** apaga as inscrições. No iPhone só funciona com o app instalado na tela inicial (iOS 16.4+).
 
 ## Spotify (uso pessoal)
 

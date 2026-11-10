@@ -6,7 +6,8 @@ import { SESSION_COOKIE, userFromToken } from "@/lib/auth/session";
  * Rotas de mutação também conferem a origem da requisição.
  */
 const PUBLIC_PATHS = ["/login", "/manifest.webmanifest", "/sw.js", "/offline.html"];
-const PUBLIC_PREFIXES = ["/icons/", "/brand/", "/_next/"];
+// /api/calendar/ (código secreto na URL, só leitura) e /api/cron/ (segredo no cabeçalho) têm a própria checagem
+const PUBLIC_PREFIXES = ["/icons/", "/brand/", "/_next/", "/api/calendar/", "/api/cron/"];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p)) || pathname === "/favicon.ico";

@@ -19,7 +19,7 @@ import type { FormState } from "@/lib/agenda/schemas";
 const done = () => revalidatePath("/", "layout");
 const strs = (f: FormData) => Object.fromEntries([...f.entries()].filter(([, v]) => typeof v === "string")) as Record<string, string>;
 
-const FLAGS = ["aiEnabled", "retroNotice", "screenBreakReminder", "share.agenda", "share.mood", "share.diary", "share.expenses", "share.health", "share.music", "spotify.playlists", "spotify.search", "spotify.history"] as const;
+const FLAGS = ["aiEnabled", "retroNotice", "screenBreakReminder", "share.agenda", "share.mood", "share.diary", "share.expenses", "share.health", "share.music", "spotify.playlists", "spotify.search", "spotify.history", "morningSummary", "memoryCard"] as const;
 
 /** Liga/desliga uma preferência (interruptores da tela de Configurações). */
 export async function setFlag(name: string, value: boolean): Promise<void> {
@@ -123,4 +123,13 @@ export async function disconnectSpotify() {
   await disconnectAccount(u.id);
   done();
   redirect("/configuracoes?spotify=disconnected");
+}
+
+export async function saveWelcome(_p: FormState, f: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const parsed = z.object({ days: reqInt(1, 30) }).safeParse(strs(f));
+  if (!parsed.success) return { error: "Informe de 1 a 30 dias.", fieldErrors: { days: "Informe de 1 a 30 dias." } };
+  await patchSettings(u.id, { welcomeAfterDays: parsed.data.days });
+  done();
+  return { ok: true };
 }

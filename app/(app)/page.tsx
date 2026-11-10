@@ -9,9 +9,13 @@ import { ensureDayPlan, getPlanState, aiUsageToday, lastAiFailure } from "@/lib/
 import { aiFailureText } from "@/lib/ai/messages";
 import { pendingRetro } from "@/lib/retro";
 import { loadTrilha } from "@/lib/trilha";
+import { welcomeDue } from "@/lib/presence";
+import { focusFor, getClosing } from "@/lib/closing";
+import { memoryForToday } from "@/lib/memory";
+import { MemoryCard, MorningSummary, PrioritiesCard, WelcomeBack } from "@/components/PresenceCards";
 import { Cover } from "@/components/ui/Cover";
 import { AI_DAILY_LIMIT } from "@/lib/settings";
-import { formatDateLong, localDateKey, localMinutes, cap } from "@/lib/time";
+import { addDays, formatDateLong, localDateKey, localMinutes, cap } from "@/lib/time";
 import { brl } from "@/lib/format";
 import { Icon } from "@/lib/icons";
 import { Logo } from "@/components/Logo";
@@ -33,7 +37,8 @@ const MODE_TEXT: Record<string, string> = {
   cooldown: "A IA falhou há pouco; o app espera alguns minutos antes de tentar de novo.", failed: "A IA falhou desta vez.", format: "A resposta da IA veio fora do formato.",
 };
 
-export default async function TodayPage() {
+export default async function TodayPage({ searchParams }: { searchParams: Promise<{ checkin?: string; resumo?: string }> }) {
+  const sp = await searchParams;
   const user = await requireUser();
   const now = new Date();
   const today = localDateKey(now);
@@ -74,6 +79,18 @@ export default async function TodayPage() {
   const rulesMode = mode.source === "rules" && mode.reason && mode.reason !== "manual";
   const failure = rulesMode && ["failed", "format", "cooldown"].includes(mode.reason!) ? await lastAiFailure(user.id) : null;
   const { trilha } = await loadTrilha(user.id, today);
+  const welcome = welcomeDue(settings, today);
+  // de manhã por padrão; /?resumo=1 abre o resumo a qualquer hora
+  const morning = !welcome && (sp.resumo === "1" || (settings.morningSummary && nowMin < 12 * 60));
+  const [yClosing, memory, focus] = await Promise.all([
+    getClosing(user.id, addDays(today, -1)),
+    settings.memoryCard && !welcome ? memoryForToday(user.id, today) : Promise.resolve(null),
+    morning ? focusFor(user.id, today) : Promise.resolve(null),
+  ]);
+  const summaryItems = morning ? [
+    ...occurrences.filter((o) => !o.canceled && o.endMin > nowMin).map((o) => ({ startMin: o.startMin, title: o.title })),
+    ...blocks.filter((b) => b.kind !== "ajuste" && b.start_min + b.duration_min > nowMin).map((b) => ({ startMin: b.start_min, title: b.title })),
+  ].sort((a, b) => a.startMin - b.startMin).slice(0, 4) : [];
   const name = settings.displayName ?? user.username;
 
   return (
@@ -88,7 +105,10 @@ export default async function TodayPage() {
       </Group>
 
       <Stack gap="md">
-        <CheckinCard initial={checkin ? { mood: checkin.mood, energy: checkin.energy, note: checkin.note } : null} />
+        {welcome && <WelcomeBack />}
+        {morning && <MorningSummary focus={focus} items={summaryItems} news={headlines.slice(0, 2).map((h) => ({ id: h.id, title: h.title, feed: h.feed_title }))} />}
+        {yClosing && yClosing.priorities.length > 0 && <PrioritiesCard priorities={yClosing.priorities} />}
+        <CheckinCard initial={checkin ? { mood: checkin.mood, energy: checkin.energy, note: checkin.note } : null} startOpen={sp.checkin === "1"} />
 
         {ctx.lightDay && (
           <Panel tone="lavender" title="Dia leve" icon="leaf" action={<form action={toggleLightDay}><Button type="submit" size="compact-xs" variant="white" color="lavender.7">{state.lightDay ? "Voltar ao normal" : "Desligar"}</Button></form>}>
@@ -134,7 +154,9 @@ export default async function TodayPage() {
           </Panel>
         )}
 
-        {headlines.length > 0 && (
+        {memory && <MemoryCard item={memory} />}
+
+        {headlines.length > 0 && !morning && (
           <Panel tone="plain" title="Notícias em destaque" icon="news" action={<LinkButton href="/noticias" size="compact-xs" variant="subtle">Ver todas</LinkButton>}>
             <Stack gap={8}>{headlines.map((h) => (<Link key={h.id} href={`/noticias/${h.id}`} style={{ textDecoration: "none", color: "inherit" }}><Text size="xs" c="dimmed">{h.feed_title}</Text><Text size="sm" fw={700} lh={1.25}>{h.title}</Text></Link>))}</Stack>
           </Panel>

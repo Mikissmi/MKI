@@ -61,3 +61,23 @@ self.addEventListener("fetch", (e) => {
     }
   })());
 });
+
+// Notificações (Web Push): mostra o aviso e abre a tela certa ao tocar.
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { data = { title: "MKI", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(data.title || "MKI", {
+    body: data.body || "", icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", tag: data.tag || undefined,
+    data: { url: typeof data.url === "string" && data.url.startsWith("/") && !data.url.startsWith("//") ? data.url : "/" },
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/";
+  e.waitUntil((async () => {
+    const all = await clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) { if (new URL(c.url).origin === self.location.origin && "focus" in c) { await c.focus(); if ("navigate" in c) await c.navigate(url).catch(() => undefined); return; } }
+    await clients.openWindow(url);
+  })());
+});

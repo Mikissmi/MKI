@@ -43,11 +43,11 @@ function Scale({ name, label, prefix, value, onChange, tone }: { name: string; l
  * O estado vem do banco (existe check-in hoje = recolhido), então vale ao recarregar e em outro aparelho,
  * e no dia seguinte, sem check-in, o card volta cheio.
  */
-export function CheckinCard({ initial }: { initial: { mood: number; energy: number; note: string | null } | null }) {
+export function CheckinCard({ initial, startOpen = false }: { initial: { mood: number; energy: number; note: string | null } | null; startOpen?: boolean }) {
   const reduceMotion = useReducedMotion();
   const [mood, setMood] = useState<number | null>(initial?.mood ?? null);
   const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null);
-  const [expanded, setExpanded] = useState(initial === null);
+  const [expanded, setExpanded] = useState(initial === null || startOpen);
   const [state, action, pending] = useActionState<FormState, FormData>(saveCheckin, {});
   const saved = state.ok || (initial !== null && !state.error);
   const answered = saved && mood !== null && energy !== null;
