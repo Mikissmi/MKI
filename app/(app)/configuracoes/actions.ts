@@ -1,10 +1,15 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { query } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
-import { getSettings, patchSettings, AI_DAILY_LIMIT, type AiShare } from "@/lib/settings";
+import { getSettings, patchSettings, AI_DAILY_LIMIT, type AiShare, type SpotifyFeatures } from "@/lib/settings";
+import { authorizeUrl, disconnectAccount } from "@/lib/spotify/auth";
+import { redirectUriProblem, scopesFor, spotifyConfig, STATE_COOKIE } from "@/lib/spotify/config";
 import { AiError, getProvider } from "@/lib/ai";
 import { aiFailureText } from "@/lib/ai/messages";
 import { aiUsageToday } from "@/lib/planner/service";
@@ -14,13 +19,17 @@ import type { FormState } from "@/lib/agenda/schemas";
 const done = () => revalidatePath("/", "layout");
 const strs = (f: FormData) => Object.fromEntries([...f.entries()].filter(([, v]) => typeof v === "string")) as Record<string, string>;
 
-const FLAGS = ["aiEnabled", "retroNotice", "screenBreakReminder", "share.agenda", "share.mood", "share.diary", "share.expenses", "share.health"] as const;
+const FLAGS = ["aiEnabled", "retroNotice", "screenBreakReminder", "share.agenda", "share.mood", "share.diary", "share.expenses", "share.health", "share.music", "spotify.playlists", "spotify.search", "spotify.history"] as const;
 
 /** Liga/desliga uma preferência (interruptores da tela de Configurações). */
 export async function setFlag(name: string, value: boolean): Promise<void> {
   const u = await requireUser();
   if (!(FLAGS as readonly string[]).includes(name)) return;
-  if (name.startsWith("share.")) {
+  if (name.startsWith("spotify.")) {
+    const s = await getSettings(u.id);
+    const spotifyFeatures: SpotifyFeatures = { ...s.spotifyFeatures, [name.slice(8)]: value };
+    await patchSettings(u.id, { spotifyFeatures });
+  } else if (name.startsWith("share.")) {
     const s = await getSettings(u.id);
     const aiShare: AiShare = { ...s.aiShare, [name.slice(6)]: value };
     await patchSettings(u.id, { aiShare });
@@ -83,4 +92,35 @@ export async function testAi(): Promise<{ ok: boolean; message: string }> {
     done();
     return { ok: false, message: aiFailureText(err.reason, err.detail) };
   }
+}
+
+/** Limites do Spotify: intervalo mínimo entre atualizações e máximo de chamadas por dia. */
+export async function saveSpotifyLimits(_p: FormState, f: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const parsed = z.object({ interval: reqInt(5, 1440), daily: reqInt(5, 1000) }).safeParse(strs(f));
+  if (!parsed.success) return { error: "Confira os números informados.", fieldErrors: Object.fromEntries(parsed.error.issues.map((i) => [String(i.path[0]), i.message])) };
+  await patchSettings(u.id, { spotifyMinIntervalMin: parsed.data.interval, spotifyDailyLimit: parsed.data.daily });
+  done();
+  return { ok: true };
+}
+
+/** Começa o login no Spotify: guarda um `state` aleatório num cookie e segue para a tela de autorização do Spotify. */
+export async function connectSpotify(f: FormData) {
+  const u = await requireUser();
+  const cfg = spotifyConfig();
+  if (!cfg.configured) redirect("/configuracoes?spotify=not_configured");
+  const problem = redirectUriProblem(cfg.redirectUri);
+  if (problem) redirect(`/configuracoes?spotify=error&msg=${encodeURIComponent(problem)}`);
+  const s = await getSettings(u.id);
+  const state = randomBytes(24).toString("base64url");
+  (await cookies()).set(STATE_COOKIE, state, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/spotify", maxAge: 600 });
+  redirect(authorizeUrl(state, scopesFor(s.spotifyFeatures), f.get("reconnect") === "1"));
+}
+
+/** Desconectar: apaga os tokens e o cache do Spotify. */
+export async function disconnectSpotify() {
+  const u = await requireUser();
+  await disconnectAccount(u.id);
+  done();
+  redirect("/configuracoes?spotify=disconnected");
 }

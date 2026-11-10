@@ -1,7 +1,8 @@
 import { query, queryOne } from "@/lib/db";
 import { parseTime } from "@/lib/time";
 
-export type AiShare = { agenda: boolean; mood: boolean; diary: boolean; expenses: boolean; health: boolean };
+export type AiShare = { agenda: boolean; mood: boolean; diary: boolean; expenses: boolean; health: boolean; music: boolean };
+export type SpotifyFeatures = { playlists: boolean; search: boolean; history: boolean };
 export type Accent = "lotus" | "sage" | "sun" | "lavender";
 
 export type Settings = {
@@ -18,14 +19,20 @@ export type Settings = {
   readingBooksPerYear: number;
   screenBreakReminder: boolean;
   retroNotice: boolean;
+  spotifyFeatures: SpotifyFeatures;
+  /** intervalo mínimo entre atualizações do Spotify ao abrir a tela de Música (minutos) */
+  spotifyMinIntervalMin: number;
+  /** limite de chamadas ao Spotify por dia dentro do app */
+  spotifyDailyLimit: number;
 };
 
 export const AI_DAILY_LIMIT = 10; // decisão fechada: 10 chamadas por dia dentro do app
 
 const DEFAULTS: Settings = {
   displayName: null, accent: "lotus", wake: "07:00", sleep: "23:00", aiEnabled: true,
-  aiShare: { agenda: true, mood: true, diary: false, expenses: false, health: false },
+  aiShare: { agenda: true, mood: true, diary: false, expenses: false, health: false, music: false },
   aiCooldownMin: 5, waterGoal: 8, monthlyBudgetCents: null, readingSessionsPerWeek: 5, readingBooksPerYear: 12, screenBreakReminder: false, retroNotice: true,
+  spotifyFeatures: { playlists: true, search: true, history: false }, spotifyMinIntervalMin: 60, spotifyDailyLimit: 100,
 };
 
 const isTime = (v: unknown): v is string => typeof v === "string" && parseTime(v) !== null;
@@ -42,7 +49,7 @@ export function normalizeSettings(d: Record<string, unknown>): Settings {
     aiEnabled: bool(d.aiEnabled, DEFAULTS.aiEnabled),
     aiShare: {
       agenda: bool(share.agenda, DEFAULTS.aiShare.agenda), mood: bool(share.mood, DEFAULTS.aiShare.mood), diary: bool(share.diary, DEFAULTS.aiShare.diary),
-      expenses: bool(share.expenses, DEFAULTS.aiShare.expenses), health: bool(share.health, DEFAULTS.aiShare.health),
+      expenses: bool(share.expenses, DEFAULTS.aiShare.expenses), health: bool(share.health, DEFAULTS.aiShare.health), music: bool(share.music, DEFAULTS.aiShare.music),
     },
     aiCooldownMin: int(d.aiCooldownMin, DEFAULTS.aiCooldownMin, 1, 120),
     waterGoal: int(d.waterGoal, DEFAULTS.waterGoal, 1, 40),
@@ -51,6 +58,13 @@ export function normalizeSettings(d: Record<string, unknown>): Settings {
     readingBooksPerYear: int(d.readingBooksPerYear, DEFAULTS.readingBooksPerYear, 1, 365),
     screenBreakReminder: bool(d.screenBreakReminder, DEFAULTS.screenBreakReminder),
     retroNotice: bool(d.retroNotice, DEFAULTS.retroNotice),
+    spotifyFeatures: {
+      playlists: bool(((d.spotifyFeatures ?? {}) as Record<string, unknown>).playlists, DEFAULTS.spotifyFeatures.playlists),
+      search: bool(((d.spotifyFeatures ?? {}) as Record<string, unknown>).search, DEFAULTS.spotifyFeatures.search),
+      history: bool(((d.spotifyFeatures ?? {}) as Record<string, unknown>).history, DEFAULTS.spotifyFeatures.history),
+    },
+    spotifyMinIntervalMin: int(d.spotifyMinIntervalMin, DEFAULTS.spotifyMinIntervalMin, 5, 1440),
+    spotifyDailyLimit: int(d.spotifyDailyLimit, DEFAULTS.spotifyDailyLimit, 5, 1000),
   };
 }
 

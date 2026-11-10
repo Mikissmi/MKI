@@ -8,6 +8,8 @@ import { isScheduled } from "@/lib/habits";
 import { ensureDayPlan, getPlanState, aiUsageToday, lastAiFailure } from "@/lib/planner/service";
 import { aiFailureText } from "@/lib/ai/messages";
 import { pendingRetro } from "@/lib/retro";
+import { loadTrilha } from "@/lib/trilha";
+import { Cover } from "@/components/ui/Cover";
 import { AI_DAILY_LIMIT } from "@/lib/settings";
 import { formatDateLong, localDateKey, localMinutes, cap } from "@/lib/time";
 import { brl } from "@/lib/format";
@@ -71,6 +73,7 @@ export default async function TodayPage() {
   const hasProposed = blocks.some((b) => b.status === "proposed");
   const rulesMode = mode.source === "rules" && mode.reason && mode.reason !== "manual";
   const failure = rulesMode && ["failed", "format", "cooldown"].includes(mode.reason!) ? await lastAiFailure(user.id) : null;
+  const { trilha } = await loadTrilha(user.id, today);
   const name = settings.displayName ?? user.username;
 
   return (
@@ -118,6 +121,16 @@ export default async function TodayPage() {
         {retro && (
           <Panel tone="sun" title={retro.period === "semana" ? "Sua retrospectiva da semana está pronta" : "Sua retrospectiva do mês está pronta"} icon="calendar" action={<LinkButton href={`/retrospectivas?p=${retro.period}&d=${retro.start}`} size="compact-xs">Ver</LinkButton>}>
             <Text size="sm" style={{ opacity: 0.85 }}>Veja como foi: humor, hábitos, leituras, tempo de tela e gastos.</Text>
+          </Panel>
+        )}
+
+        {trilha && (
+          <Panel tone="pink" title="Trilha do dia" icon="music" action={<LinkButton href="/musica" size="compact-xs" variant="subtle">Música</LinkButton>}>
+            <Group wrap="nowrap" gap="sm">
+              <Cover url={trilha.cover_url} icon="music" width={56} height={56} radius={14} />
+              <div style={{ flex: 1, minWidth: 0 }}><Text fw={800} lineClamp={1}>{trilha.title}</Text>{trilha.subtitle && <Text size="xs" lineClamp={1} style={{ opacity: 0.9 }}>{trilha.subtitle}</Text>}</div>
+              {trilha.url && <Button component="a" href={trilha.url} target="_blank" rel="noopener noreferrer" size="compact-sm" leftSection={<Icon name="play" size={14} />} aria-label={trilha.spotify_playlist_id ? `Abrir no Spotify: ${trilha.title}` : `Abrir ${trilha.title} no app de música`}>{trilha.spotify_playlist_id ? "Abrir no Spotify" : "Abrir"}</Button>}
+            </Group>
           </Panel>
         )}
 

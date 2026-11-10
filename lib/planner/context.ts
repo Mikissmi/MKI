@@ -38,6 +38,11 @@ export async function loadPlanContext(userId: string, date: string, opts: { toda
     query<{ id: string; title: string }>("SELECT id, title FROM audio_items WHERE user_id = $1 AND kind = 'podcast' AND status = 'quero' ORDER BY created_at LIMIT 5", [userId]),
   ]);
 
+  // Música só vai para a IA se liberado, e só o que foi cadastrado à mão: itens do Spotify (spotify_id) nunca entram.
+  const musicTitles = settings.aiShare.music
+    ? (await query<{ title: string }>("SELECT title FROM audio_items WHERE user_id = $1 AND spotify_id IS NULL AND status = 'quero' ORDER BY created_at DESC LIMIT 10", [userId])).map((m) => m.title)
+    : [];
+
   const logsBy = new Map<string, Set<string>>();
   for (const l of habitLogs) logsBy.set(l.habit_id, (logsBy.get(l.habit_id) ?? new Set()).add(l.date));
   const pendingHabits = habits
@@ -70,6 +75,7 @@ export async function loadPlanContext(userId: string, date: string, opts: { toda
     flexBlocks: occurrences.filter((o) => o.kind === "routine" && o.flexible && !o.canceled && o.window).map((o) => ({ blockId: o.blockId!, title: o.title, startMin: o.startMin, durationMin: o.endMin - o.startMin, earliest: o.window!.earliest, latest: o.window!.latest, confirmed: Boolean(o.confirmed) })),
     travelSlots: occurrences.filter((o) => o.kind === "travel" && o.suggestions && !o.canceled).map((o) => ({ startMin: o.startMin, endMin: o.endMin })),
     podcasts,
+    musicTitles,
   };
 
   // O hash ignora a hora atual: o plano só é refeito quando agenda, energia, hábitos ou preferências mudam.

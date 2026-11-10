@@ -1,4 +1,4 @@
-import { Box, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Alert, Box, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { query } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { AI_DAILY_LIMIT, getSettings } from "@/lib/settings";
@@ -15,7 +15,9 @@ import { FlagSwitch, ThemeSwitch } from "@/components/SettingsControls";
 import { FormSheet, type Field } from "@/components/forms/FormSheet";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ImportForm } from "@/components/ImportForm";
-import { saveAccent, saveGoals, saveProfile } from "./actions";
+import { connectSpotify, disconnectSpotify, saveAccent, saveGoals, saveProfile, saveSpotifyLimits } from "./actions";
+import { spotifyStatus } from "@/lib/spotify/service";
+import { redirectUriProblem, spotifyConfig } from "@/lib/spotify/config";
 import { saveHours } from "../agenda/actions";
 import { EXPORT_TABLES } from "@/lib/export";
 
@@ -23,7 +25,17 @@ export const metadata = { title: "Configurações" };
 
 const REASON: Record<string, string> = { disabled: "IA desligada", no_key: "sem chave do Gemini", limit: "limite diário", cooldown: "espera após falha", failed: "falha da IA", format: "resposta inválida", manual: "pedido direto" };
 
-export default async function SettingsPage() {
+const SPOTIFY_MSG: Record<string, { ok: boolean; text: string }> = {
+  ok: { ok: true, text: "Spotify conectado." },
+  disconnected: { ok: true, text: "Spotify desconectado. Os tokens e os dados guardados do Spotify foram apagados." },
+  denied: { ok: false, text: "Você cancelou a autorização no Spotify. Nada foi conectado." },
+  state: { ok: false, text: "A resposta do Spotify não veio do pedido que você iniciou (verificação de segurança). Tente conectar de novo." },
+  not_configured: { ok: false, text: "O Spotify ainda não está configurado no servidor." },
+  error: { ok: false, text: "Não consegui concluir a conexão com o Spotify." },
+};
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ spotify?: string; msg?: string }> }) {
+  const sp = await searchParams;
   const user = await requireUser();
   const s = await getSettings(user.id);
   const today = localDateKey();
@@ -34,6 +46,14 @@ export default async function SettingsPage() {
     aiAvailability(user.id, s),
     lastAiFailure(user.id),
   ]);
+  const spStatus = await spotifyStatus(user.id, s.spotifyFeatures);
+  const spCfg = spotifyConfig();
+  const spProblem = spCfg.redirectUri ? redirectUriProblem(spCfg.redirectUri) : null;
+  const spNote = sp.spotify ? SPOTIFY_MSG[sp.spotify] : undefined;
+  const spLimitFields: Field[] = [
+    { name: "interval", label: "Intervalo mínimo entre atualizações (minutos)", type: "decimal", required: true, description: "Playlists e histórico só são lidos de novo depois desse tempo." },
+    { name: "daily", label: "Máximo de chamadas ao Spotify por dia", type: "decimal", required: true },
+  ];
   const goalFields: Field[] = [
     { name: "waterGoal", label: "Meta de água (copos por dia)", type: "decimal", required: true },
     { name: "sessions", label: "Meta de leitura (sessões por semana)", type: "decimal", required: true },
@@ -82,6 +102,7 @@ export default async function SettingsPage() {
                 <FlagSwitch name="share.diary" label="Diário e anotações" checked={s.aiShare.diary} />
                 <FlagSwitch name="share.expenses" label="Gastos" checked={s.aiShare.expenses} />
                 <FlagSwitch name="share.health" label="Saúde" checked={s.aiShare.health} />
+                <FlagSwitch name="share.music" label="Música" description="Só itens cadastrados por você. Nada que veio do Spotify é enviado." checked={s.aiShare.music} />
               </Stack>
               <Text size="xs" mt={6} style={{ opacity: 0.9 }}>No plano gratuito, o Google pode usar o que é enviado para melhorar produtos. Por padrão, diário, gastos e saúde ficam de fora.</Text>
             </Box>
@@ -94,6 +115,55 @@ export default async function SettingsPage() {
             {reasons.length > 0 && <Text size="xs" style={{ opacity: 0.9 }}>Motivos do plano B: {reasons.map((r) => `${REASON[r.reason ?? ""] ?? r.reason ?? "regras"} (${r.n})`).join(", ")}.</Text>}
           </Stack>
         </Panel>
+
+        <div id="spotify">
+        <Panel tone="sage" title="Spotify" icon="music" action={spStatus.connected ? (spStatus.needsReconnect ? <Pill tone="lavender" icon="lock">reconectar</Pill> : <Pill tone="plain">conectado</Pill>) : <Pill tone="lavender" icon="lock">desconectado</Pill>}>
+          <Stack gap="sm">
+            {spNote && <Alert color={spNote.ok ? "green" : "red"} variant="light" role="status">{spNote.text}{sp.msg && !spNote.ok ? ` ${sp.msg}` : ""}</Alert>}
+            {!spStatus.configured && (
+              <Box p="sm" style={{ background: "rgba(255,255,255,0.6)", borderRadius: 14 }}>
+                <Text size="sm" fw={700}>Falta configurar no servidor</Text>
+                <Text size="xs" mt={4}>Variáveis de ambiente que faltam: {spStatus.missingEnv.join(", ")}. Veja o passo a passo no README (seção Spotify). Sem elas, o resto do app continua funcionando normalmente.</Text>
+              </Box>
+            )}
+            {spStatus.configured && spProblem && <Alert color="orange" variant="light" role="alert">{spProblem}</Alert>}
+            {spStatus.configured && !spProblem && !spStatus.connected && (
+              <form action={connectSpotify}><Button type="submit" leftSection={<Icon name="music" size={16} />}>Conectar Spotify</Button></form>
+            )}
+            {spStatus.connected && (
+              <>
+                <Text size="sm">Conta: <b>{spStatus.displayName ?? "Spotify"}</b>. Os tokens ficam criptografados no banco, nunca no navegador.</Text>
+                {(spStatus.needsReconnect || spStatus.missingScopes.length > 0) && (
+                  <Alert color="orange" variant="light" role="alert">
+                    {spStatus.needsReconnect ? "A autorização expirou ou foi revogada. Reconecte para voltar a atualizar." : "Você ligou um recurso que precisa de uma permissão nova. Reconecte para concedê-la."}
+                    {spStatus.lastError ? ` (${spStatus.lastError})` : ""}
+                  </Alert>
+                )}
+                {spStatus.blockedUntil && <Text size="xs" role="status">O Spotify pediu para esperar; novas chamadas voltam às {new Date(spStatus.blockedUntil).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}.</Text>}
+                <Group gap="xs">
+                  {!spProblem && <form action={connectSpotify}><input type="hidden" name="reconnect" value="1" /><Button type="submit" variant={spStatus.needsReconnect || spStatus.missingScopes.length > 0 ? "filled" : "white"} color={spStatus.needsReconnect ? undefined : "dark"} size="compact-md" leftSection={<Icon name="refresh" size={14} />}>Reconectar</Button></form>}
+                  <form action={disconnectSpotify}><Button type="submit" variant="white" color="red.8" size="compact-md">Desconectar</Button></form>
+                </Group>
+              </>
+            )}
+            <Box p="sm" style={{ background: "rgba(255,255,255,0.55)", borderRadius: 16 }}>
+              <Text size="sm" fw={800} mb={6}>Recursos (cada um pede só a permissão de que precisa)</Text>
+              <Stack gap={8}>
+                <FlagSwitch name="spotify.playlists" label="Minhas playlists" description="Escolher uma playlist como trilha do dia" checked={s.spotifyFeatures.playlists} />
+                <FlagSwitch name="spotify.search" label="Buscar álbuns e podcasts" description="Adicionar a Para ouvir com capa e link" checked={s.spotifyFeatures.search} />
+                <FlagSwitch name="spotify.history" label="Histórico recente" description="Marcar como ouvido o que você tocou. O histórico não é guardado." checked={s.spotifyFeatures.history} />
+              </Stack>
+            </Box>
+            <FormSheet title="Limites do Spotify" fields={spLimitFields} values={{ interval: s.spotifyMinIntervalMin, daily: s.spotifyDailyLimit }} action={saveSpotifyLimits}>
+              <Stack gap={6}>
+                <Group justify="space-between"><Text size="sm">Atualizar no máximo a cada</Text><Text size="sm" fw={800}>{s.spotifyMinIntervalMin} min</Text></Group>
+                <Group justify="space-between"><Text size="sm">Chamadas hoje</Text><Text size="sm" fw={800}>{spStatus.callsToday} / {s.spotifyDailyLimit}</Text></Group>
+              </Stack>
+            </FormSheet>
+            <Text size="xs" style={{ opacity: 0.9 }}>Uso pessoal, no modo de desenvolvimento do Spotify (conta Premium do dono). Capas e nomes guardados temporariamente por até 7 dias e sempre com link de volta ao Spotify. Nada do Spotify é enviado à IA.</Text>
+          </Stack>
+        </Panel>
+        </div>
 
         <Panel tone="plain" title="Metas e limites" icon="target">
           <FormSheet title="Metas e limites" fields={goalFields} values={{ waterGoal: s.waterGoal, sessions: s.readingSessionsPerWeek, books: s.readingBooksPerYear, budget: moneyInput(s.monthlyBudgetCents), cooldown: s.aiCooldownMin }} action={saveGoals}>

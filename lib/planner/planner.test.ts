@@ -14,7 +14,7 @@ const base = (o: Partial<PlanContext> = {}): PlanContext => ({
     { id: "x3", name: "Correr", minutes: 30, energy: "alta", screen: "sem_tela", daysSince: 20 },
   ],
   quickWins: [{ id: "q1", title: "Alongar 10 min", minutes: 10, energy: "baixa", screen: "sem_tela" }, { id: "q2", title: "Ouvir um álbum", minutes: 10, energy: "baixa", screen: "com_tela" }],
-  screenMinutes: { com: 0, sem: 0 }, flexBlocks: [], travelSlots: [], podcasts: [], ...o,
+  screenMinutes: { com: 0, sem: 0 }, flexBlocks: [], travelSlots: [], podcasts: [], musicTitles: [], ...o,
 });
 
 describe("motor de regras", () => {

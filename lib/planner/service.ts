@@ -74,6 +74,7 @@ export function buildAiPrompt(loaded: LoadedContext, request?: string): string {
   };
   if (!settings.aiShare.agenda) payload.compromissos = ctx.busy.length ? "há compromissos nos horários ocupados" : [];
   if (settings.aiShare.mood) { payload.humor = ctx.mood; payload.energia = ctx.energy; }
+  if (settings.aiShare.music && ctx.musicTitles.length) payload.musicaParaOuvir = ctx.musicTitles;
   if (request) payload.pedido = request;
   return JSON.stringify(payload);
 }

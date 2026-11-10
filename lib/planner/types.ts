@@ -41,6 +41,8 @@ export type PlanContext = {
   /** trechos de deslocamento de hoje em blocos que pedem sugestões no trajeto */
   travelSlots: { startMin: number; endMin: number }[];
   podcasts: { id: string; title: string }[];
+  /** títulos cadastrados à mão em Música (nunca itens vindos do Spotify); só preenchido se o usuário liberou "Música" para a IA */
+  musicTitles: string[];
 };
 
 export const LIGHT_DAY_MAX_ITEMS = 3;
